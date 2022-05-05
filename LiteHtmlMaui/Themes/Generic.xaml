@@ -1,0 +1,17 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:LiteHtmlMaui.Handlers"
+    xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml">
+    <Style TargetType="controls:WindowsLiteHtmlControl">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:WindowsLiteHtmlControl">
+                    <xaml:CanvasControl x:Name="Canvas" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+</ResourceDictionary>
