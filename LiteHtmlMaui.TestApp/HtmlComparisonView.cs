@@ -20,6 +20,11 @@ public class HtmlComparisonView : ContentView
         public string Html { get; set; }
 
         public string Css { get; set; }
+
+        public Task<Stream> GetStreamForUrlAsync(string url)
+        {
+            return Task.FromResult<Stream>(null);
+        }
     }
 
 

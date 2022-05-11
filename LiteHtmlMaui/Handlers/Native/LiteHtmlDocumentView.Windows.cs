@@ -74,17 +74,14 @@ namespace LiteHtmlMaui.Handlers.Native
             {
                 if (!_bitmaps.IsLoading(url))
                 {
-                    // 
                     Task.Run(async () =>
                     {
-                        await Task.Delay(1000);
                         var ibmp = await _bitmaps.GetOrCreateImageAsync(url, LoadResourceAsync);                        
                         if (ibmp != null)
                         {
                             _redrawAction();
                         }
                     });
-                    // ~execute in thread
                 }               
 
             }
@@ -96,7 +93,7 @@ namespace LiteHtmlMaui.Handlers.Native
             await stream.CopyToAsync(ms);
             ms.Position = 0;
             var imgStream = ms.AsRandomAccessStream();
-            var cimg = await CanvasVirtualBitmap.LoadAsync(_resourceCreator, imgStream);            
+            var cimg = await CanvasVirtualBitmap.LoadAsync(_resourceCreator, imgStream);                        
             return cimg;
         }
 
@@ -172,9 +169,52 @@ namespace LiteHtmlMaui.Handlers.Native
             _drawingSession.DrawGeometry(path, color, borders.Right.Width, style);
         }
 
-        protected override void DrawListMarkerCb(IntPtr listMarker, ref FontDesc font)
+        protected override void DrawListMarkerCb(ref ListMarker listMarker, ref FontDesc font)
         {
-           // throw new NotImplementedException();
+            if (_drawingSession == null) return;
+
+            if (string.IsNullOrEmpty(listMarker.Image))
+            {
+                var color = Color.FromArgb(listMarker.color.Alpha, listMarker.color.Red, listMarker.color.Green, listMarker.color.Blue);
+                switch(listMarker.marker_type)
+                {
+                    case list_style_type.list_style_type_circle:
+                        _drawingSession.DrawEllipse(listMarker.pos.X + listMarker.pos.Width / 2, listMarker.pos.Y + listMarker.pos.Height / 2,
+                            listMarker.pos.Width / 2, listMarker.pos.Height / 2, color);
+                        break;
+                    case list_style_type.list_style_type_disc:
+                        _drawingSession.FillEllipse(listMarker.pos.X + listMarker.pos.Width / 2, listMarker.pos.Y + listMarker.pos.Height / 2,
+                            listMarker.pos.Width / 2, listMarker.pos.Height / 2, color);
+                        break;
+                    case list_style_type.list_style_type_square:
+                        _drawingSession.FillRectangle(new Rect(listMarker.pos.X, listMarker.pos.Y, listMarker.pos.Width, listMarker.pos.Height), color);
+                        break;
+                    case list_style_type.list_style_type_decimal:
+                    case list_style_type.list_style_type_lower_alpha:
+                    case list_style_type.list_style_type_lower_latin:
+                    case list_style_type.list_style_type_upper_alpha:
+                    case list_style_type.list_style_type_upper_latin:
+                        string text = "";
+                        switch (listMarker.marker_type)
+                        {
+                            case list_style_type.list_style_type_decimal:
+                                text = "." + listMarker.index;
+                                break;
+                            case list_style_type.list_style_type_lower_latin:
+                            case list_style_type.list_style_type_lower_alpha:
+                                text = "." + IndexToAlpha(listMarker.index, "abcdefghijklmnopqrstuvwxyz");
+                                break;
+                            case list_style_type.list_style_type_upper_latin:
+                            case list_style_type.list_style_type_upper_alpha:
+                                text = "." + IndexToAlpha(listMarker.index, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                                break;
+                        }
+                        var textFormat = CreateTextFormatFromFontDesc(ref font);
+                        textFormat.Direction = CanvasTextDirection.RightToLeftThenTopToBottom;
+                        _drawingSession.DrawText(text, listMarker.pos.X, listMarker.pos.Y, color, textFormat);
+                        break;
+                }
+            }           
         }
 
         protected override void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, ref WebColor color, ref Position position)
@@ -189,21 +229,21 @@ namespace LiteHtmlMaui.Handlers.Native
             if (font.Decoration.HasFlag(font_decoration.Underline))
             {
                 winfont = winfont ?? GetCanvasFontMetrics(ref font);
-                var underlinePosition = position.Y + (winfont.Ascent + winfont.Descent) * font.Size;
-                _drawingSession.DrawLine(position.X, underlinePosition, position.X + position.Width, underlinePosition, brush, font.Size * winfont.UnderlineThickness);               
+                var underlinePosition = position.Y + (winfont.Ascent + winfont.Descent) * format.FontSize;
+                _drawingSession.DrawLine(position.X, underlinePosition, position.X + position.Width, underlinePosition, brush, format.FontSize * winfont.UnderlineThickness);               
                 
             }
             if (font.Decoration.HasFlag(font_decoration.Linethrough))
             {
                 winfont = winfont ?? GetCanvasFontMetrics(ref font);
-                var strikethroughPosition = position.Y + (winfont.Ascent + winfont.Descent) * font.Size * 0.6f - 0.5f;
-                _drawingSession.DrawLine(position.X, strikethroughPosition, position.X + position.Width, strikethroughPosition, brush, font.Size * winfont.StrikethroughThickness);
+                var strikethroughPosition = position.Y + (winfont.Ascent + winfont.Descent) * format.FontSize * 0.6f - 0.5f;
+                _drawingSession.DrawLine(position.X, strikethroughPosition, position.X + position.Width, strikethroughPosition, brush, format.FontSize * winfont.StrikethroughThickness);
             }
             if (font.Decoration.HasFlag(font_decoration.Overline))
             {
                 winfont = winfont ?? GetCanvasFontMetrics(ref font);
                 var overlinePosition = position.Y - 0.5f;
-                _drawingSession.DrawLine(position.X, overlinePosition, position.X + position.Width, overlinePosition, brush, font.Size * winfont.UnderlineThickness);
+                _drawingSession.DrawLine(position.X, overlinePosition, position.X + position.Width, overlinePosition, brush, format.FontSize * winfont.UnderlineThickness);
             }
             
             _drawingSession.DrawTextLayout(textLayout, position.X, position.Y, brush);
@@ -240,11 +280,12 @@ namespace LiteHtmlMaui.Handlers.Native
         protected override void FillFontMetricsCb(ref FontDesc font, ref FontMetrics fm)
         {
             var winfont = GetCanvasFontMetrics(ref font);
-            
-            fm.Ascent = (int)Math.Ceiling(winfont.Ascent * font.Size);
-            fm.Descent = (int)Math.Ceiling(winfont.Descent* font.Size);
+            var scaledSize = PxToPt(font.Size);
+
+            fm.Ascent = (int)Math.Ceiling(winfont.Ascent * scaledSize);
+            fm.Descent = (int)Math.Ceiling(winfont.Descent* scaledSize);
             fm.Height = fm.Ascent + fm.Descent;            
-            fm.XHeight = (int)Math.Ceiling(winfont.XHeight * font.Size);
+            fm.XHeight = (int)Math.Ceiling(winfont.XHeight * scaledSize);
             fm.DrawSpaces = (font.Italic == FontStyle.fontStyleItalic || font.Decoration != 0) ? 1 : 0;            
         }
 
@@ -255,7 +296,7 @@ namespace LiteHtmlMaui.Handlers.Native
             defaults.Language = Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
             var tb = new TextBlock();            
             defaults.FontFaceName = tb.FontFamily.Source; // default
-            defaults.FontSize = (int)tb.FontSize;
+            defaults.FontSize = PtToPxCb((int)tb.FontSize);
         }
 
         protected override MauiSize GetImageSize(ICanvasImage image)
@@ -269,6 +310,11 @@ namespace LiteHtmlMaui.Handlers.Native
             return (int)(_dpiResolver() / 96.0f * pt);
         }
 
+        private int PxToPt(int px)
+        {
+            return (int)Math.Ceiling(96.0f * px / _dpiResolver());
+        }
+
         protected override void SetCursorCb(string cursor)
         {
             _setCursorAction(cursor);
@@ -278,8 +324,8 @@ namespace LiteHtmlMaui.Handlers.Native
         {          
             using var format = CreateTextFormatFromFontDesc(ref font);
 
-            using var textLayout = new CanvasTextLayout(_resourceCreator, text, format, float.MaxValue, float.MaxValue);            
-            return (int)Math.Ceiling(textLayout.LayoutBoundsIncludingTrailingWhitespace.Width);
+            using var textLayout = new CanvasTextLayout(_resourceCreator, text, format, float.MaxValue, float.MaxValue);
+            return (int)Math.Floor(textLayout.LayoutBoundsIncludingTrailingWhitespace.Width);            
         }
 
        
@@ -290,15 +336,15 @@ namespace LiteHtmlMaui.Handlers.Native
             _drawingSession = null;
         }
 
-        private static CanvasTextFormat CreateTextFormatFromFontDesc(ref FontDesc fontDesc)
+        private CanvasTextFormat CreateTextFormatFromFontDesc(ref FontDesc fontDesc)
         {
             var format = new CanvasTextFormat();
 
             format.FontFamily = fontDesc.FaceName;
-            format.FontSize = fontDesc.Size;
+            format.FontSize = PxToPt(fontDesc.Size);
             format.FontWeight = new FontWeight((ushort)fontDesc.Weight);
             format.FontStyle = fontDesc.Italic == FontStyle.fontStyleItalic ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Normal;
-            format.Options = CanvasDrawTextOptions.EnableColorFont;
+            format.Options = CanvasDrawTextOptions.Default;
             format.WordWrapping = CanvasWordWrapping.NoWrap;
 
             return format;

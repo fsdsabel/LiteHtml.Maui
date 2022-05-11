@@ -167,6 +167,45 @@ namespace LiteHtmlMaui.Handlers.Native
         Leave
     }
 
+    enum list_style_type
+    {
+        list_style_type_none,
+        list_style_type_circle,
+        list_style_type_disc,
+        list_style_type_square,
+        list_style_type_armenian,
+        list_style_type_cjk_ideographic,
+        list_style_type_decimal,
+        list_style_type_decimal_leading_zero,
+        list_style_type_georgian,
+        list_style_type_hebrew,
+        list_style_type_hiragana,
+        list_style_type_hiragana_iroha,
+        list_style_type_katakana,
+        list_style_type_katakana_iroha,
+        list_style_type_lower_alpha,
+        list_style_type_lower_greek,
+        list_style_type_lower_latin,
+        list_style_type_lower_roman,
+        list_style_type_upper_alpha,
+        list_style_type_upper_latin,
+        list_style_type_upper_roman,
+    };
+
+
+    [StructLayout(LayoutKind.Sequential, CharSet = LiteHtmlInterop.InteropCharSet)]
+    struct ListMarker
+    {
+        public string Image;
+        public string BaseUrl;
+        public list_style_type marker_type;
+        public WebColor color;
+        public Position pos;
+        public int index;
+        public UIntPtr font;
+    };
+
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
     delegate int TextWidthDelegate([In] string text, [In] ref FontDesc font);
 
@@ -195,7 +234,7 @@ namespace LiteHtmlMaui.Handlers.Native
     delegate void GetImageSizeDelegate([In] string source, [In] string baseUrl, [In, Out] ref MauiSize size);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    delegate void DrawListMarkerDelegate([In] IntPtr listMarker, [In] ref FontDesc font);
+    delegate void DrawListMarkerDelegate([In] ref ListMarker listMarker, [In] ref FontDesc font);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     delegate void GetDefaultsDelegate(ref Defaults defaults);

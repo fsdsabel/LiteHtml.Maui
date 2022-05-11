@@ -25,6 +25,7 @@ namespace LiteHtmlMaui.Handlers
         private static readonly CanvasDevice SharedDevice = CanvasDevice.GetSharedDevice();
 
         private string? _html;
+        private Func<string, Task<Stream?>>? _externalResourceResolver;
         private string _userCss = "";
         private CanvasControl? _canvas;
         private double _lastRasterizationScale = 1.0;
@@ -41,7 +42,7 @@ namespace LiteHtmlMaui.Handlers
             _lastRasterizationScale = XamlRoot?.RasterizationScale ?? 1;
             if (_html != null)
             {
-                LoadHtml(_html, _userCss);
+                LoadHtml(_html, _userCss, _externalResourceResolver);
             }
         }
 
@@ -121,6 +122,12 @@ namespace LiteHtmlMaui.Handlers
 
         private async Task<Stream> ResolveResource(string url)
         {
+            if(_externalResourceResolver != null)
+            {
+                var result = await _externalResourceResolver(url);
+                if (result != null) return result;
+            }
+            
             var client = new HttpClient();
             return await client.GetStreamAsync(url);
         }
@@ -148,19 +155,19 @@ namespace LiteHtmlMaui.Handlers
             }
         }
 
-        public void LoadHtml(string? html, string? userCss)
+        public void LoadHtml(string? html, string? userCss, Func<string, Task<Stream?>>? resourceResolver)
         {
+            _html = html;
+            _externalResourceResolver = resourceResolver;
             if (IsLoaded)
-            {
-                _html = html;
+            {   
                 _documentView.LoadHtml(html, userCss ?? "");
                 _canvas?.Invalidate();
                 InvalidateMeasure();
             }
             else
             {
-                _html = html;
-                _userCss = userCss ?? "";
+                _userCss = userCss ?? "";                
             }
         }        
 
@@ -248,7 +255,7 @@ namespace LiteHtmlMaui.Handlers
         {
             if (liteHtml.Source != null)
             {
-                handler.PlatformView.LoadHtml(liteHtml.Source.Html, liteHtml.Source.Css);
+                handler.PlatformView.LoadHtml(liteHtml.Source.Html, liteHtml.Source.Css, liteHtml.Source.GetStreamForUrlAsync);
             }
         }
 

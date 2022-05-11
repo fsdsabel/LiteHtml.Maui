@@ -1,6 +1,8 @@
 ﻿using Android.Content;
 using Android.Graphics;
 using Android.Util;
+using Android.Views;
+using System.Diagnostics;
 using Paint = Android.Graphics.Paint;
 using Path = Android.Graphics.Path;
 using Rect = Android.Graphics.Rect;
@@ -23,21 +25,20 @@ namespace LiteHtmlMaui.Handlers.Native
 
         protected override int PtToPxCb(int pt)
         {
-            var metrics = new DisplayMetrics();
-            _context.Display?.GetRealMetrics(metrics);
+            using var metrics = _context.Resources?.DisplayMetrics;            
             return (int)TypedValue.ApplyDimension(ComplexUnitType.Pt, pt, metrics);
         }
 
         protected override void GetDefaultsCb(ref Defaults defaults)
         {
-          //  defaults = new Defaults();
             defaults.FontFaceName = ""; // default
-            defaults.FontSize = DpToPx(14, _context); // Android default            
+            using var paint = new Paint();
+            defaults.FontSize = PtToPxCb((int)Math.Ceiling(paint.TextSize));
         }
 
-        protected override void DrawListMarkerCb(IntPtr listMarker, ref FontDesc font)
+        protected override void DrawListMarkerCb(ref ListMarker listMarker, ref FontDesc font)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         protected override void DrawBordersCb(ref Borders borders, ref Position position, bool root)
@@ -56,7 +57,7 @@ namespace LiteHtmlMaui.Handlers.Native
             using var paint = new Paint(PaintFlags.AntiAlias);
             var borderColor = borders.Right.Color;            
             paint.StrokeWidth = borders.Right.Width;
-            paint.SetStyle(Paint.Style.Stroke);
+            paint.SetStyle(Paint.Style.Stroke);            
             paint.Color = Android.Graphics.Color.Argb(borderColor.Alpha, borderColor.Red, borderColor.Green, borderColor.Blue);
             var borderPath = CreateRoundedRect(ref borders, ref position);
             _canvas.DrawPath(borderPath, paint);
@@ -103,13 +104,14 @@ namespace LiteHtmlMaui.Handlers.Native
         protected override void FillFontMetricsCb(ref FontDesc font, ref FontMetrics fm)
         {
             using var paint = PaintFromFontDesc(font);
-            // TODO something is not quite right here
-            fm.Ascent = -(int)paint.Ascent();
-            fm.Descent = (int)paint.Descent();
-            fm.Height = fm.XHeight = fm.Ascent + fm.Descent;
-            /*Rect b = new Rect();
-            paint.GetTextBounds("W", 0, 1, b);
-            fm.Height = fm.XHeight = b.Height() - b.Top;*/
+            using var metrics = paint.GetFontMetricsInt();
+            if (metrics == null)
+            {
+                return;
+            }
+            fm.Ascent = -metrics.Ascent;
+            fm.Descent = metrics.Descent;
+            fm.Height = fm.XHeight = metrics.Descent - metrics.Ascent; 
             fm.DrawSpaces = (font.Italic == FontStyle.fontStyleItalic || font.Decoration != 0) ? 1 : 0;
         }
 
@@ -129,14 +131,36 @@ namespace LiteHtmlMaui.Handlers.Native
             return (int)Math.Ceiling(paint.MeasureText(text));
         }
 
-        private static Paint PaintFromFontDesc(FontDesc fontDesc)
+        private Paint PaintFromFontDesc(FontDesc fontDesc)
         {
-            var paint = new Paint(PaintFlags.SubpixelText | PaintFlags.LinearText | PaintFlags.AntiAlias);
-            var typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), fontDesc.Weight, fontDesc.Italic == FontStyle.fontStyleItalic);
+            var paint = new Paint(PaintFlags.SubpixelText | /*| PaintFlags.LinearText |*/ PaintFlags.AntiAlias);
+            Typeface? typeface;
+            if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.P)
+            {
+#pragma warning disable CA1416 // Validate platform compatibility
+                typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), fontDesc.Weight, fontDesc.Italic == FontStyle.fontStyleItalic);
+#pragma warning restore CA1416 // Validate platform compatibility
+            }
+            else
+            {
+                var style = TypefaceStyle.Normal;
+                if(fontDesc.Italic == FontStyle.fontStyleItalic)
+                {
+                    style |= fontDesc.Weight >= 700 ? TypefaceStyle.BoldItalic : TypefaceStyle.Italic;
+                }
+                if(fontDesc.Weight>=700)
+                {
+                    style |= TypefaceStyle.Bold;
+                }
+                typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), style);
+            }
             paint.SetTypeface(typeface);
-            paint.TextSize = fontDesc.Size;
+                        
+            var spSize = PxToPt(fontDesc.Size, _context);
+            paint.TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, spSize, _context.Resources?.DisplayMetrics);
+            Debug.WriteLine($"{spSize} -> {paint.TextSize}");
 
-            if(fontDesc.Decoration.HasFlag(font_decoration.Underline))
+            if (fontDesc.Decoration.HasFlag(font_decoration.Underline))
             {
                 paint.Flags = paint.Flags | PaintFlags.UnderlineText;
             }
@@ -148,11 +172,10 @@ namespace LiteHtmlMaui.Handlers.Native
             return paint;
         }
 
-        private static int DpToPx(float dp, Context context)
+        private static int PxToPt(float px, Context context)
         {
-            var metrics = new DisplayMetrics();
-            context.Display?.GetRealMetrics(metrics);
-            return (int)TypedValue.ApplyDimension(ComplexUnitType.Dip, dp, metrics);
+            using var metrics = context.Resources?.DisplayMetrics;
+            return (int)Math.Ceiling(px * 72.0 / (double)(metrics?.DensityDpi ?? DisplayMetricsDensity.Default));
         }
 
         private static Path CreateRoundedRect(ref Borders borders, ref Position draw_pos)

@@ -12,13 +12,14 @@ namespace LiteHtmlMaui.Handlers
 
     public class AndroidLiteHtmlView : View
     {
-        private AndroidLiteHtmlDocumentView _documentView;      
+        private AndroidLiteHtmlDocumentView _documentView;
+        private Func<string, Task<Stream?>>? _externalResourceResolver;
         private string? _html;
 
         public AndroidLiteHtmlView(Context context) : base(context)
         {
             _documentView = new AndroidLiteHtmlDocumentView(context, ResolveResource);
-            _documentView.AnchorClicked += OnAnchorClicked;
+            _documentView.AnchorClicked += OnAnchorClicked;                      
         }
 
         private void OnAnchorClicked(object? sender, string url)
@@ -31,8 +32,14 @@ namespace LiteHtmlMaui.Handlers
 
         private Task<Stream> ResolveResource(string url)
         {
+            if (_externalResourceResolver != null)
+            {
+                var result = _externalResourceResolver(url).GetAwaiter().GetResult();
+                if (result != null) return Task.FromResult(result);
+            }
+
             var client = new HttpClient();
-            return Task.FromResult(client.GetStreamAsync(url).GetAwaiter().GetResult());  // async crashes :(
+            return Task.FromResult(client.GetStreamAsync(url).GetAwaiter().GetResult());  // async crashes :(            
         }
 
         public string? Html
@@ -40,18 +47,22 @@ namespace LiteHtmlMaui.Handlers
             get => _html;
             set
             {
-                if(_html != value)
+                if (value != null && _html != value)
                 {
                     _html = value;
-                    _documentView.LoadHtml(value);
+                    _documentView?.LoadHtml(value);
+                    Invalidate();
                 }
             }
         }
 
-        public void LoadHtml(string? html, string? userCss)
+        public void LoadHtml(string? html, string? userCss, Func<string, Task<Stream?>>? resourceResolver)
         {
             _html = html;
+            _externalResourceResolver = resourceResolver;
+
             _documentView.LoadHtml(html, userCss ?? "");
+            Invalidate();
         }
 
         public ICommand? Command { get; set; }
@@ -136,7 +147,7 @@ namespace LiteHtmlMaui.Handlers
         {
             if (liteHtml.Source != null)
             {
-                handler.PlatformView.LoadHtml(liteHtml.Source.Html, liteHtml.Source.Css);
+                handler.PlatformView.LoadHtml(liteHtml.Source.Html, liteHtml.Source.Css, liteHtml.Source.GetStreamForUrlAsync);
             }
         }
 

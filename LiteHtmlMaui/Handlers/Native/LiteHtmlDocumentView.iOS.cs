@@ -101,7 +101,7 @@ namespace LiteHtmlMaui.Handlers.Native
             _hdc.StrokePath();
         }
 
-        protected override void DrawListMarkerCb(IntPtr listMarker, ref FontDesc font)
+        protected override void DrawListMarkerCb(ref ListMarker listMarker, ref FontDesc font)
         {
            // throw new NotImplementedException();
         }

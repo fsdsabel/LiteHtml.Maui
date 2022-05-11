@@ -1,0 +1,1 @@
+- disable litehtml test build for iOS (maybe as a whole in my repo)

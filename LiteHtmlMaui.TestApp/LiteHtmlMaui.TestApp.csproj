@@ -28,9 +28,6 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-		<ProvisioningType>manual</ProvisioningType>
-		<CodesignKey>Apple Development: Daniel Sabel (LS22V8M484)</CodesignKey>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
 		
 	</PropertyGroup>
   
@@ -97,14 +94,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Resources\Html\Simple.html" />
+	  <None Remove="Resources\Html\Images.html" />
 	  <None Remove="Resources\Html\Text.html" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <EmbeddedResource Include="Resources\Html\Images.html" />
 	  <EmbeddedResource Include="Resources\Html\master.css" />
 	  <EmbeddedResource Include="Resources\Html\Text.html" />
-	  <EmbeddedResource Include="Resources\Html\Simple.html" />
 	  <EmbeddedResource Include="Resources\Html\test.css" />
 	</ItemGroup>
 
@@ -112,6 +109,21 @@
 	  <!--<PackageReference Include="LiteHtmlMaui" Version="1.0.0" />-->
     <ProjectReference Include="..\LiteHtmlMaui\LiteHtmlMaui.csproj" />
     
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="ImagesPage.xaml.cs">
+	    <DependentUpon>ImagesPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="TextComparisonPage.xaml.cs">
+	    <DependentUpon>TextComparisonPage.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Update="TextComparisonPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	</ItemGroup>
 
 

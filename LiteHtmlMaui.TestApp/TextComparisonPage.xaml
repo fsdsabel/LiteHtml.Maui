@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+              xmlns:html="http://schemas.microsoft.com/dotnet/2021/mauilitehtml"   
+              xmlns:local="clr-namespace:LiteHtmlMaui.TestApp"
+             x:Class="LiteHtmlMaui.TestApp.TextComparisonPage">
+    <ContentPage.Content>
+        <StackLayout>
+            <Label>This page compares native text rendering to an equivalent LiteHTML rendering. Both texts should appear equal.</Label>
+            <Label Text="Sample Text (Label)" FontSize="18" FontFamily="Arial" Margin="3" />
+            <html:LiteHtml Margin="3">
+                <html:LiteHtml.Html>
+                    <![CDATA[
+                    <style>
+                        body {margin:0pt;}
+                        span {font-size:18pt; font-family:Arial;}
+                    </style>
+                    <span>Sample Text (LiteHTML) </span> 
+                    ]]>
+                </html:LiteHtml.Html>
+            </html:LiteHtml>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

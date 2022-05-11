@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,7 +39,7 @@ namespace LiteHtmlMaui.Handlers.Native
         private MauiContainerCallbacks _callbacks;
         private bool disposedValue;
         private string? _html;
-        private string _userCss;
+        private string _userCss = "";
         protected readonly LiteHtmlImageCache<TBitmap> _bitmaps;
         private readonly LiteHtmlResolveResourceDelegate _resolveResource;
 
@@ -104,7 +105,7 @@ namespace LiteHtmlMaui.Handlers.Native
             AnchorClicked?.Invoke(this, url);
         }
         protected abstract void GetDefaultsCb(ref Defaults defaults);
-        protected abstract void DrawListMarkerCb(IntPtr listMarker, ref FontDesc font);
+        protected abstract void DrawListMarkerCb(ref ListMarker listMarker, ref FontDesc font);
 
 
         protected virtual void GetImageSizeCb(string source, string baseUrl, ref MauiSize size)
@@ -240,6 +241,29 @@ namespace LiteHtmlMaui.Handlers.Native
             return new Uri(new Uri(baseUrl), url).ToString();
         }
         
+
+        protected string IndexToAlpha(int index, string digits)
+        {
+            const int ColumnBase = 26;
+            const int DigitMax = 7; // ceil(log26(Int32.Max))
+
+            if (index <= 0)
+                return "";
+
+            if (index <= ColumnBase)
+                return digits[index - 1].ToString();
+
+            var sb = new StringBuilder();
+            sb.Append(' ', DigitMax);
+            var current = index;
+            var offset = DigitMax;
+            while (current > 0)
+            {
+                sb[--offset] = digits[--current % ColumnBase];
+                current /= ColumnBase;
+            }
+            return sb.ToString(offset, DigitMax - offset);
+        }
 
         protected virtual void Dispose(bool disposing)
         {

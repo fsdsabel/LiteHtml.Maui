@@ -23,6 +23,8 @@ namespace LiteHtmlMaui.Controls
         string? Html { get; }
 
         string? Css { get; }
+
+        Task<Stream?> GetStreamForUrlAsync(string url);
     }
 
     public class LiteHtml : View, IElementConfiguration<LiteHtml>, ILiteHtml

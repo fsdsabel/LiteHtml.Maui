@@ -5,6 +5,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:LiteHtmlMaui.TestApp"
     Shell.FlyoutBehavior="Flyout">
+
+    <ShellContent
+        Title="Text Comparison"
+        Route="TextComparison" 
+        ContentTemplate="{DataTemplate local:TextComparisonPage}"
+        />
+
     <ShellContent
         Title="Text"
         Route="Text" 
@@ -13,9 +20,9 @@
 
 
     <ShellContent
-        Title="Hello, World!"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Title="Images"
+        ContentTemplate="{DataTemplate local:ImagesPage}"
+        Route="Images" />
 
     
 

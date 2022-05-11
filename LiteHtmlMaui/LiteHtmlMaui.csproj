@@ -29,11 +29,23 @@
 
   <ItemGroup>
     <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)runtimes\win-x64\native\litehtml-maui.dll" />
+    <AndroidNativeLibrary Include="runtimes/android-arm64/native/liblitehtml-maui.so">
+      <Abi>arm64-v8a</Abi>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="runtimes/android-x86/native/liblitehtml-maui.so">
+      <Abi>x86</Abi>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="runtimes/android-x86_64/native/liblitehtml-maui.so">
+      <Abi>x86_64</Abi>
+    </AndroidNativeLibrary>
+
   </ItemGroup>
 
   <ItemGroup>
     <Content CopyToOutputDirectory="PreserveNewest" Include="runtimes/win-x64/native/litehtml-maui.dll" Pack="true" PackagePath="runtimes/win-x64/native/litehtml-maui.dll" />
-    <Content CopyToOutputDirectory="PreserveNewest" Include="runtimes/arm64-v8a/native/liblitehtml-maui.so" Pack="true" PackagePath="runtimes/android-arm64/native/liblitehtml-maui.so" />
+    <Content CopyToOutputDirectory="PreserveNewest" Include="runtimes/android-arm64/native/liblitehtml-maui.so" Pack="true" PackagePath="runtimes/android-arm64/native/liblitehtml-maui.so" />
+    <Content CopyToOutputDirectory="PreserveNewest" Include="runtimes/android-x86/native/liblitehtml-maui.so" Pack="true" PackagePath="runtimes/android-x86/native/liblitehtml-maui.so" />
+    <Content CopyToOutputDirectory="PreserveNewest" Include="runtimes/android-x86_64/native/liblitehtml-maui.so" Pack="true" PackagePath="runtimes/android-x86_64/native/liblitehtml-maui.so" />
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
