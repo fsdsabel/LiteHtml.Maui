@@ -12,5 +12,7 @@
 #cmake --build ../out/_buildios --config Release --target install -- -UseModernBuildSystem=NO
 
 cmake -S. -G Xcode -B../out/_buildios -DCMAKE_TOOLCHAIN_FILE=ios.toolchain.cmake -DPLATFORM=OS64COMBINED -DCMAKE_INSTALL_PREFIX=`pwd`/../out/ios -DBUILD_TESTING=OFF
-cmake --build ../out/_buildios --config Debug
-cmake --install ../out/_buildios --config Debug
+cmake --build ../out/_buildios --config Release
+cmake --install ../out/_buildios --config Release
+
+cp ../out/ios/lib/*.a ../LiteHtmlMaui/Platforms/iOS/NativeLibs/
