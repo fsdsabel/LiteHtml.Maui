@@ -94,6 +94,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Html\Borders.html" />
 	  <None Remove="Resources\Html\Images.html" />
 	  <None Remove="Resources\Html\Text.html" />
 	</ItemGroup>
@@ -101,6 +102,7 @@
 	<ItemGroup>
 	  <EmbeddedResource Include="Resources\Html\Images.html" />
 	  <EmbeddedResource Include="Resources\Html\master.css" />
+	  <EmbeddedResource Include="Resources\Html\Borders.html" />
 	  <EmbeddedResource Include="Resources\Html\Text.html" />
 	  <EmbeddedResource Include="Resources\Html\test.css" />
 	</ItemGroup>
@@ -118,10 +120,16 @@
 	  <Compile Update="TextComparisonPage.xaml.cs">
 	    <DependentUpon>TextComparisonPage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="BordersPage.xaml.cs">
+	    <DependentUpon>BordersPage.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
 	  <MauiXaml Update="TextComparisonPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="BordersPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

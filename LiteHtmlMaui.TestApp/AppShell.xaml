@@ -18,6 +18,12 @@
         ContentTemplate="{DataTemplate local:TextPage}"
         />
 
+    <ShellContent
+        Title="Borders"
+        Route="Borders" 
+        ContentTemplate="{DataTemplate local:BordersPage}"
+        />
+
 
     <ShellContent
         Title="Images"

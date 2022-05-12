@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Graphics;
+using Android.Text;
 using Android.Util;
 using Android.Views;
 using System.Diagnostics;
@@ -81,9 +82,9 @@ namespace LiteHtmlMaui.Handlers.Native
                                 break;
                         }
                         {
-                            using var textpaint = PaintFromFontDesc(font);
-                            textpaint.Color = color;
-                            _canvas.DrawText(new string(text.Reverse().ToArray()), listMarker.pos.X, listMarker.pos.Y, textpaint);
+                            var pos = listMarker.pos;
+                            var col = listMarker.color;
+                            DrawTextCb(IntPtr.Zero, new string(text.Reverse().ToArray()), ref font, ref col, ref pos);                           
                         }
                         break;
                 }
@@ -171,21 +172,25 @@ namespace LiteHtmlMaui.Handlers.Native
         {
             if (_canvas == null) return;
             using var paint = PaintFromFontDesc(font);
-            paint.Color = Android.Graphics.Color.Argb(color.Alpha, color.Red, color.Green, color.Blue);
-            
-            _canvas.DrawText(text, position.X, position.Height + position.Y, paint);
+            paint.Color = Android.Graphics.Color.Argb(color.Alpha, color.Red, color.Green, color.Blue);            
+            using var layout = StaticLayout.Builder.Obtain(text, 0, text.Length, paint, int.MaxValue).Build();
+            _canvas.Save();
+            _canvas.Translate(position.X, position.Y);
+            layout.Draw(_canvas); 
+            _canvas.Restore();
         }
 
 
         protected override int TextWidthCb(string text, ref FontDesc font)
         {
             using var paint = PaintFromFontDesc(font);
-            return (int)Math.Ceiling(paint.MeasureText(text));
+            using var layout = StaticLayout.Builder.Obtain(text, 0, text.Length, paint, int.MaxValue).Build();
+            return (int)Math.Ceiling(layout.GetLineWidth(0));
         }
 
-        private Paint PaintFromFontDesc(FontDesc fontDesc)
+        private TextPaint PaintFromFontDesc(FontDesc fontDesc)
         {
-            var paint = new Paint(PaintFlags.SubpixelText | /*| PaintFlags.LinearText |*/ PaintFlags.AntiAlias);
+            var paint = new TextPaint(PaintFlags.SubpixelText | /*| PaintFlags.LinearText |*/ PaintFlags.AntiAlias);
             Typeface? typeface;
             if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.P)
             {
@@ -218,7 +223,7 @@ namespace LiteHtmlMaui.Handlers.Native
             {
                 paint.Flags = paint.Flags | PaintFlags.StrikeThruText;
             }
-
+            
             return paint;
         }
 
