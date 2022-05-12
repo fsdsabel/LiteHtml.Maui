@@ -3,11 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
               xmlns:html="http://schemas.microsoft.com/dotnet/2021/mauilitehtml"   
               xmlns:local="clr-namespace:LiteHtmlMaui.TestApp"
-             x:Class="LiteHtmlMaui.TestApp.TextComparisonPage">
+             x:Class="LiteHtmlMaui.TestApp.TextComparisonPage"
+              BackgroundColor="White">
     <ContentPage.Content>
         <StackLayout>
-            <Label>This page compares native text rendering to an equivalent LiteHTML rendering. Both texts should appear equal.</Label>
-            <Label Text="Sample Text (Label)" FontSize="18" FontFamily="Arial" Margin="3" />
+            <Label TextColor="Black">This page compares native text rendering to an equivalent LiteHTML rendering. Both texts should appear equal.</Label>
+            <Label TextColor="Black" Text="Sample Text (Label)" FontSize="18" FontFamily="Arial" Margin="3" />
             <html:LiteHtml Margin="3">
                 <html:LiteHtml.Html>
                     <![CDATA[

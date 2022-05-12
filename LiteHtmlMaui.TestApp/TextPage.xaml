@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
               xmlns:html="http://schemas.microsoft.com/dotnet/2021/mauilitehtml"   
               xmlns:local="clr-namespace:LiteHtmlMaui.TestApp"
-             x:Class="LiteHtmlMaui.TestApp.TextPage">
+             x:Class="LiteHtmlMaui.TestApp.TextPage"
+              Background="White">
     <ContentPage.Content>
          <local:HtmlComparisonView Html="{local:HtmlResource HtmlFile=Text.html}" HtmlLinkClicked="HtmlComparisonView_HtmlLinkClicked"></local:HtmlComparisonView>
     </ContentPage.Content>

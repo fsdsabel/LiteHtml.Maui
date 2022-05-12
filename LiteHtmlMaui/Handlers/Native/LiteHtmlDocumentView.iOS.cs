@@ -112,33 +112,29 @@ namespace LiteHtmlMaui.Handlers.Native
 
             var attributes = FontAttributesFromFontDesc(ref font);
             attributes.ForegroundColor = new UIColor(Color(color));
+
+            // + 1 because we use Math.Floor in TextWidthCb, if we do not do this, characters will be cut off
             new NSString(text).DrawString(
-                new CGRect(position.X, position.Y, position.Width, position.Height), attributes);            
+                new CGRect(position.X, position.Y, position.Width + 1, position.Height), attributes);            
         }
 
         protected override void FillFontMetricsCb(ref FontDesc font, ref FontMetrics fm)
         {
 
-            var uifont = UIFont.FromName(font.FaceName, font.Size);
+            var uifont = UIFont.FromName(font.FaceName, PxToPt(font.Size));
             
             fm.Ascent = (int)uifont.Ascender;
             fm.Descent = -(int)uifont.Descender;
             fm.Height = (int)Math.Ceiling(uifont.LineHeight);
             fm.XHeight = (int)Math.Ceiling(uifont.xHeight);
             fm.DrawSpaces = (font.Italic == FontStyle.fontStyleItalic || font.Decoration != 0) ? 1 : 0;
-            /*
-            fm.Ascent = 10;
-            fm.Descent = 4;
-            fm.Height = 14;
-            fm.XHeight = 14;
-            fm.DrawSpaces = 1;*/
         }
 
         protected override void GetDefaultsCb(ref Defaults defaults)
         {             
             using var font = UIFont.SystemFontOfSize(12);
             defaults.FontFaceName = font.FamilyName; // default
-            defaults.FontSize = 17; // iOS default in pt            
+            defaults.FontSize = PtToPxCb(17); // iOS default in pt            
         }
 
         protected override MauiSize GetImageSize(UIImage image)
@@ -151,20 +147,24 @@ namespace LiteHtmlMaui.Handlers.Native
             return (int)(pt / UIScreen.MainScreen.Scale);
         }
 
+        private static int PxToPt(int px)
+        {
+            return (int)Math.Ceiling(px * UIScreen.MainScreen.Scale);
+        }
+
         protected override void SetCursorCb(string cursor)
         {
-            throw new NotImplementedException();
         }
 
         protected override int TextWidthCb(string text, ref FontDesc font)
         {
             var attributes = FontAttributesFromFontDesc(ref font);
-            return (int)Math.Ceiling(new NSString(text).GetSizeUsingAttributes(attributes).Width);
+            return (int)Math.Floor(new NSString(text).GetSizeUsingAttributes(attributes).Width);
         }
 
         private UIStringAttributes FontAttributesFromFontDesc(ref FontDesc font)
         {
-            var uifont = UIFont.FromName(font.FaceName, font.Size);
+            var uifont = UIFont.FromName(font.FaceName, PxToPt(font.Size));
             var attributes = new UIStringAttributes();
             attributes.Font = uifont;
             
