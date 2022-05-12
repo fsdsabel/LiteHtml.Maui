@@ -25,8 +25,9 @@ namespace LiteHtmlMaui.Handlers.Native
 
         protected override int PtToPxCb(int pt)
         {
-            using var metrics = _context.Resources?.DisplayMetrics;            
-            return (int)TypedValue.ApplyDimension(ComplexUnitType.Pt, pt, metrics);
+            using var metrics = _context.Resources?.DisplayMetrics;
+            var result = TypedValue.ApplyDimension(ComplexUnitType.Sp, pt, metrics);
+            return (int)result;            
         }
 
         protected override void GetDefaultsCb(ref Defaults defaults)
@@ -38,7 +39,55 @@ namespace LiteHtmlMaui.Handlers.Native
 
         protected override void DrawListMarkerCb(ref ListMarker listMarker, ref FontDesc font)
         {
-            //throw new NotImplementedException();
+            if (_canvas == null) return;
+
+            if (string.IsNullOrEmpty(listMarker.Image))
+            {
+                var color = Android.Graphics.Color.Argb(listMarker.color.Alpha, listMarker.color.Red, listMarker.color.Green, listMarker.color.Blue);
+                using var paint = new Paint(PaintFlags.AntiAlias);
+                paint.Color = color;
+                switch (listMarker.marker_type)
+                {
+                    case list_style_type.list_style_type_circle:
+                        paint.SetStyle(Paint.Style.Stroke);
+                        _canvas.DrawOval(listMarker.pos.X, listMarker.pos.Y, listMarker.pos.X + listMarker.pos.Width, listMarker.pos.Y + listMarker.pos.Height, paint);
+                        break;
+                    case list_style_type.list_style_type_disc:
+                        paint.SetStyle(Paint.Style.FillAndStroke);
+                        _canvas.DrawOval(listMarker.pos.X, listMarker.pos.Y, listMarker.pos.X + listMarker.pos.Width, listMarker.pos.Y + listMarker.pos.Height, paint);
+                        break;
+                    case list_style_type.list_style_type_square:
+                        paint.SetStyle(Paint.Style.FillAndStroke);
+                        _canvas.DrawRect(listMarker.pos.X, listMarker.pos.Y, listMarker.pos.X + listMarker.pos.Width, listMarker.pos.Y + listMarker.pos.Height, paint);
+                        break;
+                    case list_style_type.list_style_type_decimal:
+                    case list_style_type.list_style_type_lower_alpha:
+                    case list_style_type.list_style_type_lower_latin:
+                    case list_style_type.list_style_type_upper_alpha:
+                    case list_style_type.list_style_type_upper_latin:
+                        string text = "";
+                        switch (listMarker.marker_type)
+                        {
+                            case list_style_type.list_style_type_decimal:
+                                text = "." + listMarker.index;
+                                break;
+                            case list_style_type.list_style_type_lower_latin:
+                            case list_style_type.list_style_type_lower_alpha:
+                                text = "." + IndexToAlpha(listMarker.index, "abcdefghijklmnopqrstuvwxyz");
+                                break;
+                            case list_style_type.list_style_type_upper_latin:
+                            case list_style_type.list_style_type_upper_alpha:
+                                text = "." + IndexToAlpha(listMarker.index, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                                break;
+                        }
+                        {
+                            using var textpaint = PaintFromFontDesc(font);
+                            textpaint.Color = color;
+                            _canvas.DrawText(new string(text.Reverse().ToArray()), listMarker.pos.X, listMarker.pos.Y, textpaint);
+                        }
+                        break;
+                }
+            }
         }
 
         protected override void DrawBordersCb(ref Borders borders, ref Position position, bool root)
@@ -111,7 +160,10 @@ namespace LiteHtmlMaui.Handlers.Native
             }
             fm.Ascent = -metrics.Ascent;
             fm.Descent = metrics.Descent;
-            fm.Height = fm.XHeight = metrics.Descent - metrics.Ascent; 
+            fm.Height = (int)Math.Ceiling(paint.FontSpacing);// metrics.Descent - metrics.Ascent;
+            var bounds = new Rect();
+            paint.GetTextBounds("x", 0, 1, bounds);
+            fm.XHeight = bounds.Height();
             fm.DrawSpaces = (font.Italic == FontStyle.fontStyleItalic || font.Decoration != 0) ? 1 : 0;
         }
 
@@ -155,10 +207,8 @@ namespace LiteHtmlMaui.Handlers.Native
                 typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), style);
             }
             paint.SetTypeface(typeface);
-                        
-            var spSize = PxToPt(fontDesc.Size, _context);
-            paint.TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, spSize, _context.Resources?.DisplayMetrics);
-            Debug.WriteLine($"{spSize} -> {paint.TextSize}");
+       
+            paint.TextSize = fontDesc.Size;
 
             if (fontDesc.Decoration.HasFlag(font_decoration.Underline))
             {
@@ -170,12 +220,6 @@ namespace LiteHtmlMaui.Handlers.Native
             }
 
             return paint;
-        }
-
-        private static int PxToPt(float px, Context context)
-        {
-            using var metrics = context.Resources?.DisplayMetrics;
-            return (int)Math.Ceiling(px * 72.0 / (double)(metrics?.DensityDpi ?? DisplayMetricsDensity.Default));
         }
 
         private static Path CreateRoundedRect(ref Borders borders, ref Position draw_pos)
