@@ -173,7 +173,7 @@ namespace LiteHtmlMaui.Handlers.Native
             if (_canvas == null) return;
             using var paint = PaintFromFontDesc(font);
             paint.Color = Android.Graphics.Color.Argb(color.Alpha, color.Red, color.Green, color.Blue);            
-            using var layout = StaticLayout.Builder.Obtain(text, 0, text.Length, paint, int.MaxValue).Build();
+            using var layout = StaticLayout.Builder.Obtain(text, 0, text.Length, paint, position.Width).Build();
             _canvas.Save();
             _canvas.Translate(position.X, position.Y);
             layout.Draw(_canvas); 
@@ -184,8 +184,7 @@ namespace LiteHtmlMaui.Handlers.Native
         protected override int TextWidthCb(string text, ref FontDesc font)
         {
             using var paint = PaintFromFontDesc(font);
-            using var layout = StaticLayout.Builder.Obtain(text, 0, text.Length, paint, int.MaxValue).Build();
-            return (int)Math.Ceiling(layout.GetLineWidth(0));
+            return (int)Math.Ceiling(paint.MeasureText(text));
         }
 
         private TextPaint PaintFromFontDesc(FontDesc fontDesc)
