@@ -18,8 +18,13 @@ namespace LiteHtmlMaui.Handlers
 
         public AndroidLiteHtmlView(Context context) : base(context)
         {
-            _documentView = new AndroidLiteHtmlDocumentView(context, ResolveResource);
+            _documentView = new AndroidLiteHtmlDocumentView(context, ResolveResource, OnRedraw);
             _documentView.AnchorClicked += OnAnchorClicked;                      
+        }
+
+        private void OnRedraw()
+        {
+            RequestLayout();
         }
 
         private void OnAnchorClicked(object? sender, string url)
@@ -47,11 +52,16 @@ namespace LiteHtmlMaui.Handlers
             get => _html;
             set
             {
-                if (value != null && _html != value)
+                /*if (value != null && _html != value)
                 {
                     _html = value;
+                    _externalResourceResolver = null;
                     _documentView?.LoadHtml(value);
                     Invalidate();
+                } */
+                if (_html != value)
+                {
+                    LoadHtml(value, null, null);
                 }
             }
         }

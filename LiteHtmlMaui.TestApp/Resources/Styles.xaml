@@ -465,7 +465,8 @@
 
                     <Grid ColumnDefinitions="*,*" RowDefinitions="*,Auto">
                         <ScrollView HorizontalScrollBarVisibility="Never" Grid.ColumnSpan="2">
-                            <html:LiteHtml x:Name="PART_LiteHtml" Source="{TemplateBinding LiteHtmlSource}" VerticalOptions="FillAndExpand" IsVisible="{Binding Source={x:Reference rbLiteHtml}, Path=IsChecked}"/>
+                            <html:LiteHtml x:Name="PART_LiteHtml" 
+                                           Source="{TemplateBinding LiteHtmlSource}" VerticalOptions="FillAndExpand" IsVisible="{Binding Source={x:Reference rbLiteHtml}, Path=IsChecked}"/>
                         </ScrollView>
                         <WebView Source="{TemplateBinding HtmlSource}"  Grid.ColumnSpan="2" VerticalOptions="FillAndExpand" IsVisible="{Binding Source={x:Reference rbWebView}, Path=IsChecked}"/>
                         <RadioButton Grid.Row="1" Content="LiteHTML" x:Name="rbLiteHtml" IsChecked="True" HorizontalOptions="Center" />

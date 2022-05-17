@@ -13,13 +13,13 @@ namespace LiteHtmlMaui.Handlers.Native
 {
     
 
-    class AndroidLiteHtmlDocumentView : LiteHtmlDocumentView<Canvas, Bitmap>
+    class AndroidLiteHtmlDocumentView : LiteHtmlDocumentView<Canvas, Bitmap, Typeface>
     {
         private readonly Context _context;
         private Canvas? _canvas;
 
-        public AndroidLiteHtmlDocumentView(Context context, LiteHtmlResolveResourceDelegate resolveResource)
-            : base(resolveResource)
+        public AndroidLiteHtmlDocumentView(Context context, LiteHtmlResolveResourceDelegate resolveResource, LiteHtmlRedrawView redrawView)
+            : base(resolveResource, redrawView)
         {
             _context = context;
         }
@@ -190,26 +190,34 @@ namespace LiteHtmlMaui.Handlers.Native
         private TextPaint PaintFromFontDesc(FontDesc fontDesc)
         {
             var paint = new TextPaint(PaintFlags.SubpixelText | /*| PaintFlags.LinearText |*/ PaintFlags.AntiAlias);
-            Typeface? typeface;
-            if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.P)
+
+            var typeface = ResolveFont(ref fontDesc, (fontDesc, force) =>
             {
+                //TODO: get available fonts
+                Typeface? typeface;
+                if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.P)
+                {
 #pragma warning disable CA1416 // Validate platform compatibility
-                typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), fontDesc.Weight, fontDesc.Italic == FontStyle.fontStyleItalic);
+                    
+                    typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), fontDesc.Weight, fontDesc.Italic == FontStyle.fontStyleItalic);
 #pragma warning restore CA1416 // Validate platform compatibility
-            }
-            else
-            {
-                var style = TypefaceStyle.Normal;
-                if(fontDesc.Italic == FontStyle.fontStyleItalic)
-                {
-                    style |= fontDesc.Weight >= 700 ? TypefaceStyle.BoldItalic : TypefaceStyle.Italic;
                 }
-                if(fontDesc.Weight>=700)
+                else
                 {
-                    style |= TypefaceStyle.Bold;
+                    var style = TypefaceStyle.Normal;
+                    if (fontDesc.Italic == FontStyle.fontStyleItalic)
+                    {
+                        style |= fontDesc.Weight >= 700 ? TypefaceStyle.BoldItalic : TypefaceStyle.Italic;
+                    }
+                    if (fontDesc.Weight >= 700)
+                    {
+                        style |= TypefaceStyle.Bold;
+                    }
+                    typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), style);
                 }
-                typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), style);
-            }
+                return typeface;
+            });
+
             paint.SetTypeface(typeface);
        
             paint.TextSize = fontDesc.Size;

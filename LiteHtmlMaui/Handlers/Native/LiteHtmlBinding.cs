@@ -21,14 +21,14 @@ namespace LiteHtmlMaui.Handlers.Native
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = LiteHtmlInterop.InteropCharSet)]
-    struct FontDesc
+    record struct FontDesc
     {
         public string FaceName;
         public int Size;
         public int Weight;
         public FontStyle Italic;
         public font_decoration Decoration;       
-        public FontMetrics FontMetrics;
+        public IntPtr FontMetrics;
     }
 
     [StructLayout(LayoutKind.Sequential)]

@@ -2,6 +2,7 @@
 using LiteHtmlMaui.Hosting;
 using Microsoft.Maui.Graphics;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -19,6 +20,8 @@ namespace LiteHtmlMaui.Handlers.Native
 {
     delegate Task<Stream> LiteHtmlResolveResourceDelegate(string url);
 
+    delegate void LiteHtmlRedrawView();
+
     abstract class LiteHtmlDocumentView
     {
         private static LiteHtmlContextSafeHandle _context = null!;
@@ -32,7 +35,7 @@ namespace LiteHtmlMaui.Handlers.Native
         }
     }
 
-    abstract class LiteHtmlDocumentView<THDC, TBitmap> : LiteHtmlDocumentView, IDisposable 
+    abstract class LiteHtmlDocumentView<THDC, TBitmap, TFont> : LiteHtmlDocumentView, IDisposable 
     {
         private LiteHtmlDocumentSafeHandle? _document;
 
@@ -42,11 +45,11 @@ namespace LiteHtmlMaui.Handlers.Native
         private string _userCss = "";
         protected readonly LiteHtmlImageCache<TBitmap> _bitmaps;
         private readonly LiteHtmlResolveResourceDelegate _resolveResource;
-
+        private readonly LiteHtmlRedrawView _redrawView;
 
         public event EventHandler<string>? AnchorClicked;
 
-        protected LiteHtmlDocumentView(LiteHtmlResolveResourceDelegate resolveResource)
+        protected LiteHtmlDocumentView(LiteHtmlResolveResourceDelegate resolveResource, LiteHtmlRedrawView redrawView)
         {
             _bitmaps = new LiteHtmlImageCache<TBitmap>(CreatePlatformBitmapAsync);
             _callbacks = new MauiContainerCallbacks
@@ -65,7 +68,8 @@ namespace LiteHtmlMaui.Handlers.Native
                 OnAnchorClick = OnAnchorClickCb,
                 PtToPx = PtToPxCb
             };
-            _resolveResource = resolveResource;
+            _resolveResource = resolveResource ?? throw new ArgumentNullException(nameof(resolveResource));
+            _redrawView = redrawView ?? throw new ArgumentNullException(nameof(redrawView));
         }
 
         public virtual void LoadHtml(string? html, string userCss = "")
@@ -93,7 +97,7 @@ namespace LiteHtmlMaui.Handlers.Native
 
         public virtual void UnloadDocument()
         {
-            if (disposedValue) throw new ObjectDisposedException(nameof(LiteHtmlDocumentView<THDC, TBitmap>));
+            if (disposedValue) throw new ObjectDisposedException(nameof(LiteHtmlDocumentView<THDC, TBitmap, TFont>));
 
             _document?.Dispose();            
             _document = null;
@@ -127,20 +131,22 @@ namespace LiteHtmlMaui.Handlers.Native
             var bmp = GetImage(url);
             if (bmp == null)
             {
-                //GC.Collect();
-                // TODO load it in background and redraw if necessary
-                // loading this in a thread crashes .. some GC related issue ...
-
-                // execute in thread
-                var ibmp = _bitmaps.GetOrCreateImageAsync(url, LoadResourceAsync).GetAwaiter().GetResult();
-                if (ibmp != null && redrawOnReady)
+                if (!_bitmaps.IsLoading(url))
                 {
-                    // TODO trigger redraw
+                    Task.Run(async () =>
+                    {
+#if DEBUG
+                        await Task.Delay(1000);
+#endif
+                        var ibmp = await _bitmaps.GetOrCreateImageAsync(url, LoadResourceAsync);
+                        if (ibmp != null)
+                        {
+                            _redrawView();
+                        }
+                    });
                 }
 
-                // ~execute in thread
-
-            } 
+            }
         }
 
 
@@ -170,6 +176,41 @@ namespace LiteHtmlMaui.Handlers.Native
         protected virtual LiteHtmlBitmap<TBitmap>? GetImage(string url)
         {
             return _bitmaps.GetImage(url);
+        }
+
+        private static ConcurrentDictionary<FontDesc, TFont> _fontCache = new ConcurrentDictionary<FontDesc, TFont>();
+
+        protected static TFont ResolveFont(ref FontDesc font, Func<FontDesc, bool, TFont?> createFont) 
+        {
+            if(_fontCache.TryGetValue(font, out var cachedFont))
+            {
+                return cachedFont;
+            }
+
+            TFont? result;
+            var faceNames = font.FaceName.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            foreach(var name in faceNames)
+            {
+                var fontDesc = new FontDesc
+                {
+                    FaceName = name.Trim('"').Trim(),
+                    Decoration = font.Decoration,
+                    FontMetrics = font.FontMetrics,
+                    Italic = font.Italic,
+                    Size = font.Size,
+                    Weight = font.Weight
+                };
+                result = createFont(fontDesc, false);
+                if(result != null)
+                {
+                    _fontCache.TryAdd(font, result);
+                    return result;
+                }
+            }
+
+            result = createFont(font, true) ?? throw new InvalidOperationException("Font resolved to null");
+            _fontCache.TryAdd(font, result);
+            return result;
         }
 
         public virtual void DrawDocument(THDC hdc, int width, int height)

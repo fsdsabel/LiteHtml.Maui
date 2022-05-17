@@ -137,11 +137,17 @@ namespace LiteHtmlMaui.Handlers
             get => _html;
             set
             {
-                if (IsLoaded)
+                if(_html != value)
+                {
+                    LoadHtml(value, null, null);
+                }
+
+                /*if (IsLoaded)
                 {
                     if (value != null && _html != value)
                     {
                         _html = value;
+                        _externalResourceResolver = null;
                         _documentView?.LoadHtml(value);
                         _canvas?.Invalidate();
                         InvalidateMeasure();
@@ -151,7 +157,7 @@ namespace LiteHtmlMaui.Handlers
                 {
                     _html = value;
                     _userCss = "";
-                }
+                }*/
             }
         }
 

@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -20,7 +21,7 @@ using Rect = Windows.Foundation.Rect;
 
 namespace LiteHtmlMaui.Handlers.Native
 {
-    class WindowsLiteHtmlDocumentView : LiteHtmlDocumentView<CanvasDrawingSession, ICanvasImage>
+    class WindowsLiteHtmlDocumentView : LiteHtmlDocumentView<CanvasDrawingSession, ICanvasImage, CanvasFontFace>
     {
        class CanvasFontMetrics
         {
@@ -48,7 +49,6 @@ namespace LiteHtmlMaui.Handlers.Native
         private CanvasDrawingSession? _drawingSession;        
         private readonly ICanvasResourceCreator _resourceCreator;
         private readonly Func<float> _dpiResolver;
-        private readonly Action _redrawAction;
         private readonly Action<string> _setCursorAction;
         private static readonly Dictionary<(string faceName, int weight, FontStyle fontStyle), CanvasFontMetrics> _fontMetricsCache = new Dictionary<(string faceName, int weight, FontStyle fontStyle), CanvasFontMetrics>();
 
@@ -56,35 +56,13 @@ namespace LiteHtmlMaui.Handlers.Native
             ICanvasResourceCreator resourceCreator, 
             Func<float> dpiResolver,  
             LiteHtmlResolveResourceDelegate resolveResource,
-            Action redrawAction,
+            LiteHtmlRedrawView redrawView,
             Action<string> setCursorAction)
-            : base(resolveResource)
+            : base(resolveResource, redrawView)
         {
             _dpiResolver = dpiResolver;
-            _redrawAction = redrawAction;
             _setCursorAction = setCursorAction;
             _resourceCreator = resourceCreator;            
-        }
-
-        protected override void LoadImageCb(string source, string baseUrl, bool redrawOnReady)
-        {
-            var url = CombineUrl(baseUrl, source);
-            var bmp = GetImage(url);
-            if (bmp == null)
-            {
-                if (!_bitmaps.IsLoading(url))
-                {
-                    Task.Run(async () =>
-                    {
-                        var ibmp = await _bitmaps.GetOrCreateImageAsync(url, LoadResourceAsync);                        
-                        if (ibmp != null)
-                        {
-                            _redrawAction();
-                        }
-                    });
-                }               
-
-            }
         }
 
         protected override async Task<ICanvasImage> CreatePlatformBitmapAsync(Stream stream)
@@ -256,17 +234,24 @@ namespace LiteHtmlMaui.Handlers.Native
             {
                 return metrics;
             }
-            
-            using var fonts = CanvasFontSet.GetSystemFontSet().GetMatchingFonts(
-              font.FaceName,
-              new FontWeight((ushort)font.Weight),
-              FontStretch.Normal,
-              font.Italic == FontStyle.fontStyleItalic ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Normal);
-            var winfont = fonts.Fonts.FirstOrDefault();
-            if (winfont == null)
+
+            var winfont = ResolveFont(ref font, (fontDesc, force) =>
             {
-                winfont = CanvasFontSet.GetSystemFontSet().Fonts.First();
-            }
+                using var fonts = CanvasFontSet.GetSystemFontSet().GetMatchingFonts(
+                     fontDesc.FaceName,
+                     new FontWeight((ushort)fontDesc.Weight),
+                     FontStretch.Normal,
+                     fontDesc.Italic == FontStyle.fontStyleItalic ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Normal);
+                var winfont = fonts.Fonts.FirstOrDefault();
+                if (winfont == null && force)
+                {
+                    winfont = CanvasFontSet.GetSystemFontSet().Fonts.First();
+                }
+                return winfont;
+            });
+
+            
+           
             
             metrics = new CanvasFontMetrics(winfont);
             _fontMetricsCache.Add((font.FaceName, font.Weight, font.Italic), metrics);
@@ -279,6 +264,7 @@ namespace LiteHtmlMaui.Handlers.Native
 
         protected override void FillFontMetricsCb(ref FontDesc font, ref FontMetrics fm)
         {
+            Debug.WriteLine(font.FaceName);
             var winfont = GetCanvasFontMetrics(ref font);
             var scaledSize = PxToPt(font.Size);
 
