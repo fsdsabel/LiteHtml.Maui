@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
@@ -23,10 +23,6 @@
     </Page>
   </ItemGroup>
 
-  <!--<Target Name="AfterBuild">
-    <Copy Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'" SourceFiles="runtimes/win10-x64/native/litehtml-maui.dll" DestinationFolder="$(OutputPath)" />
-  </Target>-->
-
   <ItemGroup>
     <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)runtimes\win-x64\native\litehtml-maui.dll" />
     <AndroidNativeLibrary Include="runtimes/android-arm64/native/liblitehtml-maui.so">
@@ -43,9 +39,6 @@
 
   <ItemGroup>
     <Content CopyToOutputDirectory="PreserveNewest" Include="runtimes/win-x64/native/litehtml-maui.dll" Pack="true" PackagePath="runtimes/win-x64/native/litehtml-maui.dll" />
-    <Content CopyToOutputDirectory="PreserveNewest" Include="runtimes/android-arm64/native/liblitehtml-maui.so" Pack="true" PackagePath="runtimes/android-arm64/native/liblitehtml-maui.so" />
-    <Content CopyToOutputDirectory="PreserveNewest" Include="runtimes/android-x86/native/liblitehtml-maui.so" Pack="true" PackagePath="runtimes/android-x86/native/liblitehtml-maui.so" />
-    <Content CopyToOutputDirectory="PreserveNewest" Include="runtimes/android-x86_64/native/liblitehtml-maui.so" Pack="true" PackagePath="runtimes/android-x86_64/native/liblitehtml-maui.so" />
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
@@ -73,8 +66,13 @@
     <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
     <_MauiTargetPlatformIsTizen Condition="'$(_MauiTargetPlatformIdentifier)' == 'tizen'">True</_MauiTargetPlatformIsTizen>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>$(VersionPrefix)</Version>
+    <Version>0.1.0-alpha.1</Version>
     <Nullable>enable</Nullable>
+    <PackageId>LiteHtml.Maui</PackageId>
+    <Authors>fsdsabel</Authors>
+    <Product>LiteHtml.Maui</Product>
+    <Description>LiteHtml.Maui is a library for Microsoft.Maui that supports rendering of more complex HTML than a Label can without the overhead of a real WebView.</Description>
+    <PackageTags>litehtml;maui;html</PackageTags>
 
   </PropertyGroup>
 
