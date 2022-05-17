@@ -30,6 +30,9 @@
         ContentTemplate="{DataTemplate local:ImagesPage}"
         Route="Images" />
 
-    
+    <ShellContent
+        Title="Dynamic"
+        ContentTemplate="{DataTemplate local:DynamicPage}"
+        Route="Dynamic" />
 
 </Shell>

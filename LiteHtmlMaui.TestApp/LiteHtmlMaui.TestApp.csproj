@@ -125,6 +125,9 @@
 	  <Compile Update="ImagesPage.xaml.cs">
 	    <DependentUpon>ImagesPage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="DynamicPage.xaml.cs">
+	    <DependentUpon>DynamicPage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="TextComparisonPage.xaml.cs">
 	    <DependentUpon>TextComparisonPage.xaml</DependentUpon>
 	  </Compile>
@@ -134,6 +137,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="DynamicPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="TextComparisonPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
