@@ -1,6 +1,7 @@
 #pragma once
 #include <litehtml.h>
 #include <vector>
+#include <map>
 #include "litehtml-maui.h"
 
 using namespace litehtml;
@@ -12,14 +13,11 @@ namespace litehtml
 		class maui_container : public document_container {
 		private:
 			maui_container_callbacks _callbacks;
-			std::vector<font_desc*> *_fonts;
+			std::map<litehtml::uint_ptr, font_desc*> _fonts;
+            litehtml::uint_ptr _font_handle_index;
 		public:
-			maui_container(maui_container_callbacks callbacks) : _callbacks(callbacks) {
-				_fonts = new std::vector<font_desc*>();
-			}
-
-			~maui_container() {
-				delete _fonts;
+			maui_container(maui_container_callbacks callbacks) : _callbacks(callbacks), _font_handle_index(0) {
+				
 			}
 
 			virtual litehtml::uint_ptr	create_font(const litehtml::tchar_t* faceName, int size, int weight, litehtml::font_style italic, unsigned int decoration, litehtml::font_metrics* fm) override;

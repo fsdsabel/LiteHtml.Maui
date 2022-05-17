@@ -15,4 +15,8 @@ cmake -S. -G Xcode -B../out/_buildios -DCMAKE_TOOLCHAIN_FILE=ios.toolchain.cmake
 cmake --build ../out/_buildios --config Release
 cmake --install ../out/_buildios --config Release
 
+#cmake --build ../out/_buildios --config Debug
+#cmake --install ../out/_buildios --config Debug
+
+
 cp ../out/ios/lib/*.a ../LiteHtmlMaui/Platforms/iOS/NativeLibs/

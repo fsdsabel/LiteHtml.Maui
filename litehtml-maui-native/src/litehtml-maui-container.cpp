@@ -33,27 +33,30 @@ namespace litehtml
 			fd->weight = weight;
 			fd->italic = italic;
 			fd->decoration = decoration;
-			fd->fm = fm; // TODO, may be invalid - but we don't really need that
-			if (fm) {
+			// fd->fm = fm; // TODO, may be invalid - but we don't really need that
+            fd->fm = nullptr;
+            if (fm) {
 				_callbacks.fill_font_metrics(fd, fm);
 			}
-			_fonts->push_back(fd);
-			return (litehtml::uint_ptr)(_fonts->size() - 1);
+            _font_handle_index++;
+			_fonts.insert(std::pair<litehtml::uint_ptr, font_desc*>(_font_handle_index, fd));
+			return _font_handle_index;
 		}
 		void maui_container::delete_font(litehtml::uint_ptr hFont)
 		{			
-			font_desc* fd = _fonts->at((int)hFont);			
+			font_desc* fd = _fonts.at(hFont);
 			delete fd;
+            _fonts.erase(hFont);
 		}
 		int maui_container::text_width(const litehtml::tchar_t* text, litehtml::uint_ptr hFont)
 		{
 			LOG("text_width");
-			return _callbacks.text_width(text, _fonts->at((int)hFont));
+			return _callbacks.text_width(text, _fonts.at(hFont));
 		}
 		void maui_container::draw_text(litehtml::uint_ptr hdc, const litehtml::tchar_t* text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position& pos)
 		{
 			LOG("draw_text");
-			_callbacks.draw_text(hdc, text, _fonts->at((int)hFont), color, pos);
+			_callbacks.draw_text(hdc, text, _fonts.at(hFont), color, pos);
 		}
 		int maui_container::pt_to_px(int pt) const
 		{
@@ -86,7 +89,7 @@ namespace litehtml
 				marker.font
 			};
 
-			_callbacks.draw_list_marker(maui_marker, _fonts->at(marker.font));
+			_callbacks.draw_list_marker(maui_marker, _fonts.at(marker.font));
 		}
 		void maui_container::load_image(const litehtml::tchar_t* src, const litehtml::tchar_t* baseurl, bool redraw_on_ready)
 		{
