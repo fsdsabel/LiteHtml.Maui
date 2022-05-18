@@ -66,11 +66,13 @@ namespace LiteHtmlMaui.Handlers.Native
                 DrawListMarker = DrawListMarkerCb,
                 GetDefaults = GetDefaultsCb,
                 OnAnchorClick = OnAnchorClickCb,
-                PtToPx = PtToPxCb
+                PtToPx = PtToPxCb,
+                ImportCss = ImportCssCb
             };
             _resolveResource = resolveResource ?? throw new ArgumentNullException(nameof(resolveResource));
             _redrawView = redrawView ?? throw new ArgumentNullException(nameof(redrawView));
         }
+               
 
         public virtual void LoadHtml(string? html, string userCss = "")
         {
@@ -177,6 +179,19 @@ namespace LiteHtmlMaui.Handlers.Native
         {
             return _bitmaps.GetImage(url);
         }
+
+        protected virtual void ImportCssCb(out StringBuilder? text, string url, out StringBuilder? baseUrl)
+        {
+            text = null;
+            baseUrl = null;
+            var stream = _resolveResource(url).GetAwaiter().GetResult();
+            if (stream != null)
+            {
+                using var reader = new StreamReader(stream);
+                text = new StringBuilder(reader.ReadToEnd());
+            }
+        }
+
 
         private static ConcurrentDictionary<FontDesc, TFont> _fontCache = new ConcurrentDictionary<FontDesc, TFont>();
 

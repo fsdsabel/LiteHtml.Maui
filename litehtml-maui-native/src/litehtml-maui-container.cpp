@@ -173,14 +173,14 @@ namespace litehtml
 		}
 		void maui_container::import_css(litehtml::tstring& text, const litehtml::tstring& url, litehtml::tstring& baseurl)
 		{
-            litehtml::tchar_t** ptext = nullptr;
-            litehtml::tchar_t** pbaseurl = nullptr;
-            _callbacks.import_css(ptext, url.c_str(), pbaseurl);
+            litehtml::tchar_t* ptext;
+            litehtml::tchar_t* pbaseurl;
+            _callbacks.import_css(&ptext, url.c_str(), &pbaseurl);
             if (ptext) {
-                text = *ptext;
+                text = ptext;
             }
             if(pbaseurl) {
-                baseurl = *pbaseurl;
+                baseurl = pbaseurl;
             }
 		}
 		void maui_container::set_clip(const litehtml::position& pos, const litehtml::border_radiuses& bdr_radius, bool valid_x, bool valid_y)

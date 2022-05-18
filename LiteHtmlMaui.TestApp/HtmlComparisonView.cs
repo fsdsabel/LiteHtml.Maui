@@ -23,6 +23,10 @@ public class HtmlComparisonView : ContentView
 
         public Task<Stream> GetStreamForUrlAsync(string url)
         {
+            if(url== "test.css")
+            {
+                return Task.FromResult(ResourceLoader.LoadStreamFromEmbeddedResource("Html.test.css"));
+            }
             return Task.FromResult<Stream>(null);
         }
     }
@@ -43,8 +47,7 @@ public class HtmlComparisonView : ContentView
 
                 control.LiteHtmlSource = new MyLiteHtmlSource
                 {
-                    Html = html,
-                    Css = ResourceLoader.LoadStringFromEmbeddedResource("Html.test.css")
+                    Html = html
                 };
             });
 

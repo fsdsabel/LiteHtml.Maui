@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace LiteHtmlMaui.Handlers.Native
 {
@@ -245,6 +246,9 @@ namespace LiteHtmlMaui.Handlers.Native
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     delegate int PtToPxDelegate([In] int pt);
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
+    delegate void ImportCssDelegate([Out] out StringBuilder? text, [In] string url, [Out] out StringBuilder? baseUrl);
+
     [StructLayout(LayoutKind.Sequential)]
     struct MauiContainerCallbacks
     {
@@ -261,6 +265,7 @@ namespace LiteHtmlMaui.Handlers.Native
         public GetDefaultsDelegate GetDefaults;
         public OnAnchorClickDelegate OnAnchorClick;
         public PtToPxDelegate PtToPx;
+        public ImportCssDelegate ImportCss;
     }
 
     class LiteHtmlContextSafeHandle : SafeHandle

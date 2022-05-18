@@ -15,4 +15,16 @@ static class ResourceLoader
             return null;
         }
     }
+
+    public static Stream LoadStreamFromEmbeddedResource(string name)
+    {
+        try
+        {
+            return typeof(ResourceLoader).Assembly.GetManifestResourceStream(typeof(ResourceLoader), name);
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }
