@@ -87,15 +87,15 @@ namespace LiteHtmlMaui.Handlers.Native
                 var img = GetImage(CombineUrl(bg.BaseUrl, bg.Image));
                 if (img != null)
                 {
-                    var rect = new Rect(bg.PositionX, bg.PositionY, bg.ClipBox.Width, bg.ClipBox.Height);
                     if (bg.repeat == background_repeat.background_repeat_no_repeat)
                     {
                         _drawingSession.DrawImage(
                                 img.Image,
-                                new Rect(rect.X, rect.Y, bg.ImageSize.Width, bg.ImageSize.Height),
+                                new Rect(bg.PositionX, bg.PositionY, bg.ImageSize.Width, bg.ImageSize.Height),
                                 img.Image.GetBounds(_drawingSession.Device));
                     } else
                     {
+                        var rect = new Rect(bg.PositionX, bg.PositionY, bg.ClipBox.Width, bg.ClipBox.Height);
                         using var imgBrush = new CanvasImageBrush(_drawingSession.Device, img.Image);
                         imgBrush.SourceRectangle = img.Image.GetBounds(_drawingSession.Device);
                         imgBrush.ExtendX = CanvasEdgeBehavior.Wrap;
@@ -114,6 +114,7 @@ namespace LiteHtmlMaui.Handlers.Native
                                 break;
                         }
                     }
+                    img.Release();
                 }
             }
             else

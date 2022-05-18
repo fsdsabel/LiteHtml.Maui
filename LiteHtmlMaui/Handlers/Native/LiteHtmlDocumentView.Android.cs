@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Util;
 using Android.Views;
@@ -130,7 +131,32 @@ namespace LiteHtmlMaui.Handlers.Native
                 if (img != null)
                 {
                     using var paint = new Paint(PaintFlags.FilterBitmap);
-                    _canvas.DrawBitmap(img.Image, null, new Rect(bg.PositionX, bg.PositionY, (int)bg.ImageSize.Width, (int)bg.ImageSize.Height), paint);
+                    if (bg.repeat == background_repeat.background_repeat_no_repeat)
+                    {
+                        _canvas.DrawBitmap(img.Image, null, new Rect(bg.PositionX, bg.PositionY, bg.PositionX + bg.ImageSize.Width, bg.PositionY + bg.ImageSize.Height), paint);
+                    }
+                    else
+                    {
+                        var rect = new Rect(bg.PositionX, bg.PositionY, bg.PositionX + bg.ClipBox.Width, bg.PositionY + bg.ClipBox.Height);
+                        using var drawable = new BitmapDrawable(_context.Resources, img.Image);
+                        drawable.SetTileModeXY(Shader.TileMode.Repeat, Shader.TileMode.Repeat);
+                        
+                        switch (bg.repeat)
+                        {
+                            case background_repeat.background_repeat_repeat:
+                                drawable.SetBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
+                                break;
+                            case background_repeat.background_repeat_repeat_x:
+                                drawable.SetBounds(rect.Left, rect.Top, rect.Right, rect.Top + bg.ImageSize.Height);
+                                break;
+                            case background_repeat.background_repeat_repeat_y:
+                                drawable.SetBounds(rect.Left, rect.Top, rect.Left + bg.ImageSize.Width, rect.Bottom);
+                                break;
+                        }
+                        drawable.Draw(_canvas);
+                    }
+
+                    
                     img.Release();
                 }
             }
