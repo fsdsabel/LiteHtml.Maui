@@ -124,6 +124,8 @@ extern "C" {
 	typedef void(*get_defaults)(defaults& defaults);
 	typedef void(*on_anchor_click)(const litehtml::tchar_t* url);
 	typedef int(*pt_to_px)(int pt);
+    typedef void(*import_css)(litehtml::tchar_t** text, const litehtml::tchar_t* url, litehtml::tchar_t** baseurl);
+
 
 	struct maui_container_callbacks {
 
@@ -140,6 +142,7 @@ extern "C" {
 		get_defaults get_defaults;
 		on_anchor_click on_anchor_click;
 		pt_to_px pt_to_px;
+        import_css import_css;
 	};
 
 	enum maui_event {
