@@ -38,11 +38,11 @@ public class HtmlComparisonView : ContentView
             {
                 var control = (HtmlComparisonView)bindable;
                 var html = newValue as string ?? "";
-                html = $"<style>{ResourceLoader.LoadStringFromEmbeddedResource("Html.master.css")}{ResourceLoader.LoadStringFromEmbeddedResource("Html.test.css")}</style>{html}";
+                html = $"<style>{ResourceLoader.LoadStringFromEmbeddedResource("Html.master.css")}</style>{html}";
 
                 control.HtmlSource = new HtmlWebViewSource
                 {
-                    Html = html
+                    Html = $"<style>{ResourceLoader.LoadStringFromEmbeddedResource("Html.test.css")}</style>{html}"
                 };
 
                 control.LiteHtmlSource = new MyLiteHtmlSource

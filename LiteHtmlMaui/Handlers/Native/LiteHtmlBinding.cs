@@ -246,8 +246,9 @@ namespace LiteHtmlMaui.Handlers.Native
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     delegate int PtToPxDelegate([In] int pt);
 
+    // StringBuilder instead of IntPtr would be much more elegant but doesn't work for iOS
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
-    delegate void ImportCssDelegate([Out] out StringBuilder? text, [In] string url, [Out] out StringBuilder? baseUrl);
+    delegate void ImportCssDelegate([Out] out IntPtr text, [In] string url, [Out] out IntPtr baseUrl);
 
     [StructLayout(LayoutKind.Sequential)]
     struct MauiContainerCallbacks

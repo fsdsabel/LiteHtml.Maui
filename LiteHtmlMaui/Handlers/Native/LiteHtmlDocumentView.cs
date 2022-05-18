@@ -180,15 +180,22 @@ namespace LiteHtmlMaui.Handlers.Native
             return _bitmaps.GetImage(url);
         }
 
-        protected virtual void ImportCssCb(out StringBuilder? text, string url, out StringBuilder? baseUrl)
+        protected virtual void ImportCssCb(out IntPtr text, string url, out IntPtr baseUrl)
         {
-            text = null;
-            baseUrl = null;
+            text = IntPtr.Zero;
+            baseUrl = IntPtr.Zero;
             var stream = _resolveResource(url).GetAwaiter().GetResult();
             if (stream != null)
             {
                 using var reader = new StreamReader(stream);
-                text = new StringBuilder(reader.ReadToEnd());
+                if (LiteHtmlInterop.InteropCharSet == CharSet.Ansi)
+                {
+                    text = Marshal.StringToHGlobalAnsi(reader.ReadToEnd());
+                }
+                else
+                {
+                    text = Marshal.StringToHGlobalUni(reader.ReadToEnd());
+                }
             }
         }
 

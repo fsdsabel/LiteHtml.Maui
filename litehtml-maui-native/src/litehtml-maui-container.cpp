@@ -178,9 +178,11 @@ namespace litehtml
             _callbacks.import_css(&ptext, url.c_str(), &pbaseurl);
             if (ptext) {
                 text = ptext;
+				free(ptext);
             }
             if(pbaseurl) {
                 baseurl = pbaseurl;
+				free(pbaseurl);
             }
 		}
 		void maui_container::set_clip(const litehtml::position& pos, const litehtml::border_radiuses& bdr_radius, bool valid_x, bool valid_y)
