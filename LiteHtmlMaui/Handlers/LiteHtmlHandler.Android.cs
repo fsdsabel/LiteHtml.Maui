@@ -18,8 +18,13 @@ namespace LiteHtmlMaui.Handlers
 
         public AndroidLiteHtmlView(Context context) : base(context)
         {
-            _documentView = new AndroidLiteHtmlDocumentView(context, ResolveResource);
+            _documentView = new AndroidLiteHtmlDocumentView(context, ResolveResource, OnRedraw);
             _documentView.AnchorClicked += OnAnchorClicked;                      
+        }
+
+        private void OnRedraw()
+        {
+            RequestLayout();
         }
 
         private void OnAnchorClicked(object? sender, string url)
@@ -47,11 +52,9 @@ namespace LiteHtmlMaui.Handlers
             get => _html;
             set
             {
-                if (value != null && _html != value)
+                if (_html != value)
                 {
-                    _html = value;
-                    _documentView?.LoadHtml(value);
-                    Invalidate();
+                    LoadHtml(value, null, null);
                 }
             }
         }
@@ -62,15 +65,27 @@ namespace LiteHtmlMaui.Handlers
             _externalResourceResolver = resourceResolver;
 
             _documentView.LoadHtml(html, userCss ?? "");
-            Invalidate();
+            OnRedraw();
         }
 
         public ICommand? Command { get; set; }
 
         protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
-            _documentView.SetViewportSize(new Microsoft.Maui.Graphics.Size(widthMeasureSpec, heightMeasureSpec));
-            var size = _documentView.MeasureDocument(new Microsoft.Maui.Graphics.Size(widthMeasureSpec, heightMeasureSpec));
+            var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+            double widthSize = MeasureSpec.GetSize(widthMeasureSpec);
+            var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+            double heightSize = MeasureSpec.GetSize(heightMeasureSpec);
+            if (widthMode == MeasureSpecMode.Unspecified)
+            {
+                widthSize = double.PositiveInfinity;
+            }
+            if (heightMode == MeasureSpecMode.Unspecified)
+            {
+                heightSize = double.PositiveInfinity;
+            }
+            _documentView.SetViewportSize(new Microsoft.Maui.Graphics.Size(widthSize, heightSize));
+            var size = _documentView.MeasureDocument(new Microsoft.Maui.Graphics.Size(widthSize, heightSize));
             SetMeasuredDimension((int)size.Width, (int)size.Height);            
         }
 

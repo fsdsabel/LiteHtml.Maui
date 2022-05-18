@@ -3,16 +3,8 @@ using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Diagnostics;
 using System.Numerics;
-using System.Threading;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Text;
 using Color = Windows.UI.Color;
 using FontWeight = Windows.UI.Text.FontWeight;
@@ -20,7 +12,7 @@ using Rect = Windows.Foundation.Rect;
 
 namespace LiteHtmlMaui.Handlers.Native
 {
-    class WindowsLiteHtmlDocumentView : LiteHtmlDocumentView<CanvasDrawingSession, ICanvasImage>
+    class WindowsLiteHtmlDocumentView : LiteHtmlDocumentView<CanvasDrawingSession, ICanvasImage, CanvasFontFace>
     {
        class CanvasFontMetrics
         {
@@ -48,7 +40,6 @@ namespace LiteHtmlMaui.Handlers.Native
         private CanvasDrawingSession? _drawingSession;        
         private readonly ICanvasResourceCreator _resourceCreator;
         private readonly Func<float> _dpiResolver;
-        private readonly Action _redrawAction;
         private readonly Action<string> _setCursorAction;
         private static readonly Dictionary<(string faceName, int weight, FontStyle fontStyle), CanvasFontMetrics> _fontMetricsCache = new Dictionary<(string faceName, int weight, FontStyle fontStyle), CanvasFontMetrics>();
 
@@ -56,35 +47,13 @@ namespace LiteHtmlMaui.Handlers.Native
             ICanvasResourceCreator resourceCreator, 
             Func<float> dpiResolver,  
             LiteHtmlResolveResourceDelegate resolveResource,
-            Action redrawAction,
+            LiteHtmlRedrawView redrawView,
             Action<string> setCursorAction)
-            : base(resolveResource)
+            : base(resolveResource, redrawView)
         {
             _dpiResolver = dpiResolver;
-            _redrawAction = redrawAction;
             _setCursorAction = setCursorAction;
             _resourceCreator = resourceCreator;            
-        }
-
-        protected override void LoadImageCb(string source, string baseUrl, bool redrawOnReady)
-        {
-            var url = CombineUrl(baseUrl, source);
-            var bmp = GetImage(url);
-            if (bmp == null)
-            {
-                if (!_bitmaps.IsLoading(url))
-                {
-                    Task.Run(async () =>
-                    {
-                        var ibmp = await _bitmaps.GetOrCreateImageAsync(url, LoadResourceAsync);                        
-                        if (ibmp != null)
-                        {
-                            _redrawAction();
-                        }
-                    });
-                }               
-
-            }
         }
 
         protected override async Task<ICanvasImage> CreatePlatformBitmapAsync(Stream stream)
@@ -101,21 +70,7 @@ namespace LiteHtmlMaui.Handlers.Native
         {
             if (_drawingSession == null) return;
 
-
-
-            if (!string.IsNullOrEmpty(bg.Image))
-            {
-                // draw image
-                var img = GetImage(CombineUrl(bg.BaseUrl, bg.Image));
-                if (img != null)
-                {
-                    _drawingSession.DrawImage(
-                        img.Image,
-                        new Rect(bg.PositionX, bg.PositionY, bg.ImageSize.Width, bg.ImageSize.Height),
-                        img.Image.GetBounds(_drawingSession.Device));
-                }
-            }
-            else
+            if (bg.Color.Alpha > 0)
             {
                 // we do not support multiple colors/thicknesses on borders or styles .. keep it simple, but this can be expanded if necessary                
                 var color = bg.Color;
@@ -128,6 +83,46 @@ namespace LiteHtmlMaui.Handlers.Native
                 using var path = CreateRoundedRect(_drawingSession.Device, ref b, ref position, true);
 
                 _drawingSession.FillGeometry(path, brush);
+            }
+
+
+            if (!string.IsNullOrEmpty(bg.Image))
+            {
+                // draw image
+                var img = GetImage(CombineUrl(bg.BaseUrl, bg.Image));
+                if (img != null)
+                {                    
+                    if (bg.repeat == background_repeat.background_repeat_no_repeat)
+                    {
+                        _drawingSession.DrawImage(
+                                img.Image,
+                                new Rect(bg.PositionX, bg.PositionY, bg.ImageSize.Width, bg.ImageSize.Height),
+                                img.Image.GetBounds(_drawingSession.Device));
+                    } else
+                    {
+                        var rect = new Rect(bg.PositionX, bg.PositionY, bg.ClipBox.Width, bg.ClipBox.Height);
+                        using var imgBrush = new CanvasImageBrush(_drawingSession.Device, img.Image);
+                        imgBrush.SourceRectangle = img.Image.GetBounds(_drawingSession.Device);
+                        imgBrush.ExtendX = CanvasEdgeBehavior.Wrap;
+                        imgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+
+                        imgBrush.Transform = Matrix3x2.CreateTranslation((float)rect.X, (float)rect.Y);
+
+                        switch (bg.repeat)
+                        {
+                            case background_repeat.background_repeat_repeat:
+                                _drawingSession.FillRectangle(rect, imgBrush);
+                                break;
+                            case background_repeat.background_repeat_repeat_x:
+                                _drawingSession.FillRectangle(new Rect(rect.X, rect.Y, rect.Width, imgBrush.SourceRectangle.Value.Height), imgBrush);
+                                break;
+                            case background_repeat.background_repeat_repeat_y:
+                                _drawingSession.FillRectangle(new Rect(rect.X, rect.Y, imgBrush.SourceRectangle.Value.Width, rect.Height), imgBrush);
+                                break;
+                        }
+                    }
+                    img.Release();
+                }
             }
         }
 
@@ -256,17 +251,24 @@ namespace LiteHtmlMaui.Handlers.Native
             {
                 return metrics;
             }
-            
-            using var fonts = CanvasFontSet.GetSystemFontSet().GetMatchingFonts(
-              font.FaceName,
-              new FontWeight((ushort)font.Weight),
-              FontStretch.Normal,
-              font.Italic == FontStyle.fontStyleItalic ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Normal);
-            var winfont = fonts.Fonts.FirstOrDefault();
-            if (winfont == null)
+
+            var winfont = ResolveFont(ref font, (fontDesc, force) =>
             {
-                winfont = CanvasFontSet.GetSystemFontSet().Fonts.First();
-            }
+                using var fonts = CanvasFontSet.GetSystemFontSet().GetMatchingFonts(
+                     fontDesc.FaceName,
+                     new FontWeight((ushort)fontDesc.Weight),
+                     FontStretch.Normal,
+                     fontDesc.Italic == FontStyle.fontStyleItalic ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Normal);
+                var winfont = fonts.Fonts.FirstOrDefault();
+                if (winfont == null && force)
+                {
+                    winfont = CanvasFontSet.GetSystemFontSet().Fonts.First();
+                }
+                return winfont;
+            });
+
+            
+           
             
             metrics = new CanvasFontMetrics(winfont);
             _fontMetricsCache.Add((font.FaceName, font.Weight, font.Italic), metrics);
@@ -279,6 +281,7 @@ namespace LiteHtmlMaui.Handlers.Native
 
         protected override void FillFontMetricsCb(ref FontDesc font, ref FontMetrics fm)
         {
+            Debug.WriteLine(font.FaceName);
             var winfont = GetCanvasFontMetrics(ref font);
             var scaledSize = PxToPt(font.Size);
 

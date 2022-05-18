@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Util;
 using Android.Views;
@@ -13,13 +14,13 @@ namespace LiteHtmlMaui.Handlers.Native
 {
     
 
-    class AndroidLiteHtmlDocumentView : LiteHtmlDocumentView<Canvas, Bitmap>
+    class AndroidLiteHtmlDocumentView : LiteHtmlDocumentView<Canvas, Bitmap, Typeface>
     {
         private readonly Context _context;
         private Canvas? _canvas;
 
-        public AndroidLiteHtmlDocumentView(Context context, LiteHtmlResolveResourceDelegate resolveResource)
-            : base(resolveResource)
+        public AndroidLiteHtmlDocumentView(Context context, LiteHtmlResolveResourceDelegate resolveResource, LiteHtmlRedrawView redrawView)
+            : base(resolveResource, redrawView)
         {
             _context = context;
         }
@@ -121,24 +122,11 @@ namespace LiteHtmlMaui.Handlers.Native
         {
             if (_canvas == null) return;
 
-            
-
-            if (!string.IsNullOrEmpty(bg.Image))
-            {
-                // draw image
-                var img = GetImage(CombineUrl(bg.BaseUrl, bg.Image));
-                if (img != null)
-                {
-                    using var paint = new Paint(PaintFlags.FilterBitmap);
-                    _canvas.DrawBitmap(img.Image, null, new Rect(bg.PositionX, bg.PositionY, (int)bg.ImageSize.Width, (int)bg.ImageSize.Height), paint);
-                    img.Release();
-                }
-            }
-            else
+            if (bg.Color.Alpha > 0)
             {
                 // we do not support multiple colors/thicknesses on borders or styles .. keep it simple, but this can be expanded if necessary
                 using var paint = new Paint();
-                var color = bg.Color;                
+                var color = bg.Color;
                 paint.SetStyle(Paint.Style.Fill);
                 paint.Color = Android.Graphics.Color.Argb(color.Alpha, color.Red, color.Green, color.Blue);
 
@@ -148,7 +136,44 @@ namespace LiteHtmlMaui.Handlers.Native
                 var path = CreateRoundedRect(ref b, ref position);
 
                 _canvas.DrawPath(path, paint);
-            }
+            }            
+
+            if (!string.IsNullOrEmpty(bg.Image))
+            {
+                // draw image
+                var img = GetImage(CombineUrl(bg.BaseUrl, bg.Image));
+                if (img != null)
+                {
+                    using var paint = new Paint(PaintFlags.FilterBitmap);
+                    if (bg.repeat == background_repeat.background_repeat_no_repeat)
+                    {
+                        _canvas.DrawBitmap(img.Image, null, new Rect(bg.PositionX, bg.PositionY, bg.PositionX + bg.ImageSize.Width, bg.PositionY + bg.ImageSize.Height), paint);
+                    }
+                    else
+                    {
+                        var rect = new Rect(bg.PositionX, bg.PositionY, bg.PositionX + bg.ClipBox.Width, bg.PositionY + bg.ClipBox.Height);
+                        using var drawable = new BitmapDrawable(_context.Resources, img.Image);
+                        drawable.SetTileModeXY(Shader.TileMode.Repeat, Shader.TileMode.Repeat);
+                        
+                        switch (bg.repeat)
+                        {
+                            case background_repeat.background_repeat_repeat:
+                                drawable.SetBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
+                                break;
+                            case background_repeat.background_repeat_repeat_x:
+                                drawable.SetBounds(rect.Left, rect.Top, rect.Right, rect.Top + bg.ImageSize.Height);
+                                break;
+                            case background_repeat.background_repeat_repeat_y:
+                                drawable.SetBounds(rect.Left, rect.Top, rect.Left + bg.ImageSize.Width, rect.Bottom);
+                                break;
+                        }
+                        drawable.Draw(_canvas);
+                    }
+
+                    
+                    img.Release();
+                }
+            }            
         }
 
         protected override void FillFontMetricsCb(ref FontDesc font, ref FontMetrics fm)
@@ -190,26 +215,34 @@ namespace LiteHtmlMaui.Handlers.Native
         private TextPaint PaintFromFontDesc(FontDesc fontDesc)
         {
             var paint = new TextPaint(PaintFlags.SubpixelText | /*| PaintFlags.LinearText |*/ PaintFlags.AntiAlias);
-            Typeface? typeface;
-            if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.P)
+
+            var typeface = ResolveFont(ref fontDesc, (fontDesc, force) =>
             {
+                //TODO: get available fonts
+                Typeface? typeface;
+                if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.P)
+                {
 #pragma warning disable CA1416 // Validate platform compatibility
-                typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), fontDesc.Weight, fontDesc.Italic == FontStyle.fontStyleItalic);
+                    
+                    typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), fontDesc.Weight, fontDesc.Italic == FontStyle.fontStyleItalic);
 #pragma warning restore CA1416 // Validate platform compatibility
-            }
-            else
-            {
-                var style = TypefaceStyle.Normal;
-                if(fontDesc.Italic == FontStyle.fontStyleItalic)
-                {
-                    style |= fontDesc.Weight >= 700 ? TypefaceStyle.BoldItalic : TypefaceStyle.Italic;
                 }
-                if(fontDesc.Weight>=700)
+                else
                 {
-                    style |= TypefaceStyle.Bold;
+                    var style = TypefaceStyle.Normal;
+                    if (fontDesc.Italic == FontStyle.fontStyleItalic)
+                    {
+                        style |= fontDesc.Weight >= 700 ? TypefaceStyle.BoldItalic : TypefaceStyle.Italic;
+                    }
+                    if (fontDesc.Weight >= 700)
+                    {
+                        style |= TypefaceStyle.Bold;
+                    }
+                    typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), style);
                 }
-                typeface = Typeface.Create(Typeface.Create(fontDesc.FaceName, TypefaceStyle.Normal), style);
-            }
+                return typeface;
+            });
+
             paint.SetTypeface(typeface);
        
             paint.TextSize = fontDesc.Size;

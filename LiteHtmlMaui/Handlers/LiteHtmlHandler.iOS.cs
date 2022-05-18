@@ -1,12 +1,7 @@
 ﻿using CoreGraphics;
-using Foundation;
 using LiteHtmlMaui.Controls;
 using LiteHtmlMaui.Handlers.Native;
 using Microsoft.Maui.Handlers;
-using System;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using UIKit;
 
@@ -16,11 +11,70 @@ namespace LiteHtmlMaui.Handlers
     {
         private string? _html;
         private IOSLiteHtmlDocumentView _documentView;
+        private Func<string, Task<Stream?>>? _externalResourceResolver;
 
         public IOSLiteHtmlView()
         {
-            _documentView = new IOSLiteHtmlDocumentView(ResolveResource);
+            _documentView = new IOSLiteHtmlDocumentView(ResolveResource, OnRedraw);
+            _documentView.AnchorClicked += OnAnchorClicked;
             Opaque = false;
+        }
+
+        private void OnRedraw()
+        {
+            InvokeOnMainThread(() =>
+            {
+                // TODO: scrollview is not updated - should we do that here??
+                // https://stackoverflow.com/questions/2944294/how-do-i-auto-size-a-uiscrollview-to-fit-its-content
+
+                SizeToFit();
+                SetNeedsLayout();
+                //LayoutIfNeeded();
+                Superview?.SetNeedsLayout();
+                //Superview?.LayoutIfNeeded();
+                //Superview.SetNeedsDisplay();
+                SetNeedsDisplay();
+                RecalculateScrollViewers(this);
+            });
+
+            static void RecalculateScrollViewers(UIView child)
+            {
+                if (child.Superview == null) return;
+                if (child.Superview is UIScrollView scrollView)
+                {
+                    RecalculateContentSize(scrollView);
+                }
+                RecalculateScrollViewers(child.Superview);
+            }
+
+            static void RecalculateContentSize(UIScrollView scrollView)
+            {
+                scrollView.ShowsVerticalScrollIndicator = false;
+                scrollView.ShowsHorizontalScrollIndicator = false;
+                var totalRect = RecursiveUnionInDepthFor(scrollView);
+                scrollView.ContentSize = new CGSize(totalRect.Width, totalRect.Height);
+
+                static CGRect RecursiveUnionInDepthFor(UIView view)
+                {
+                    var totalRect = CGRect.Empty;
+                    foreach (var subView in view.Subviews.Where(v => !v.Hidden))
+                    {
+                        totalRect = totalRect.UnionWith(subView.Frame);
+                    }
+                    return totalRect;
+                }
+
+                scrollView.ShowsVerticalScrollIndicator = true;
+                scrollView.ShowsHorizontalScrollIndicator = true;
+            }
+        }
+
+        private void OnAnchorClicked(object? sender, string url)
+        {
+            if (Command?.CanExecute(url) ?? false)
+            {
+                Command?.Execute(url);
+            }
         }
 
         public string? Html
@@ -30,28 +84,31 @@ namespace LiteHtmlMaui.Handlers
             {
                 if (_html != value)
                 {
-                    _html = value;
-                    _documentView.LoadHtml(value);
-                    SetNeedsLayout();
+                    LoadHtml(value, null, null);
                 }
             }
         }
 
-        public void LoadHtml(string? html, string? userCss)
+        public void LoadHtml(string? html, string? userCss, Func<string, Task<Stream?>>? resourceResolver)
         {
             _html = html;
+            _externalResourceResolver = resourceResolver;
             _documentView.LoadHtml(html, userCss ?? "");
-            SetNeedsLayout();
+            OnRedraw();
         }
 
         public ICommand? Command { get; set; }
 
-
-        private Task<Stream> ResolveResource(string url)
+        private async Task<Stream> ResolveResource(string url)
         {
-            var client = new HttpClient(new NSUrlSessionHandler());
-            return Task.FromResult(client.GetStreamAsync(url).GetAwaiter().GetResult()); // await blocks
+            if (_externalResourceResolver != null)
+            {
+                var result = await _externalResourceResolver(url);
+                if (result != null) return result;
+            }
 
+            var client = new HttpClient(new NSUrlSessionHandler());
+            return client.GetStreamAsync(url).GetAwaiter().GetResult(); // await blocks
         }
 
         public override CGSize SizeThatFits(CGSize size)
@@ -65,6 +122,7 @@ namespace LiteHtmlMaui.Handlers
         {
             base.LayoutSubviews();
             _documentView.SetViewportSize(new Microsoft.Maui.Graphics.Size(Frame.Width, Frame.Height));
+            SetNeedsDisplay();
         }
 
         public override void Draw(CGRect rect)
@@ -74,7 +132,6 @@ namespace LiteHtmlMaui.Handlers
                 _documentView.DrawDocument(g, (int)_documentView.ViewportSize.Width, (int)_documentView.ViewportSize.Height);
             }
         }
-        // SetNeedsDisplay
     }
 
 
@@ -94,7 +151,7 @@ namespace LiteHtmlMaui.Handlers
         {
             if (liteHtml.Source != null)
             {
-                handler.PlatformView.LoadHtml(liteHtml.Source.Html, liteHtml.Source.Css);
+                handler.PlatformView.LoadHtml(liteHtml.Source.Html, liteHtml.Source.Css, liteHtml.Source.GetStreamForUrlAsync);
             }
         }
 
