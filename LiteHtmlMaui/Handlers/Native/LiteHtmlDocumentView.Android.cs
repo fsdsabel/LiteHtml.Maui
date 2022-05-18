@@ -122,7 +122,21 @@ namespace LiteHtmlMaui.Handlers.Native
         {
             if (_canvas == null) return;
 
-            
+            if (bg.Color.Alpha > 0)
+            {
+                // we do not support multiple colors/thicknesses on borders or styles .. keep it simple, but this can be expanded if necessary
+                using var paint = new Paint();
+                var color = bg.Color;
+                paint.SetStyle(Paint.Style.Fill);
+                paint.Color = Android.Graphics.Color.Argb(color.Alpha, color.Red, color.Green, color.Blue);
+
+                var b = new Borders();
+                b.Radius = bg.BorderRadius;
+                var position = bg.BorderBox;
+                var path = CreateRoundedRect(ref b, ref position);
+
+                _canvas.DrawPath(path, paint);
+            }            
 
             if (!string.IsNullOrEmpty(bg.Image))
             {
@@ -159,22 +173,7 @@ namespace LiteHtmlMaui.Handlers.Native
                     
                     img.Release();
                 }
-            }
-            else
-            {
-                // we do not support multiple colors/thicknesses on borders or styles .. keep it simple, but this can be expanded if necessary
-                using var paint = new Paint();
-                var color = bg.Color;                
-                paint.SetStyle(Paint.Style.Fill);
-                paint.Color = Android.Graphics.Color.Argb(color.Alpha, color.Red, color.Green, color.Blue);
-
-                var b = new Borders();
-                b.Radius = bg.BorderRadius;
-                var position = bg.BorderBox;
-                var path = CreateRoundedRect(ref b, ref position);
-
-                _canvas.DrawPath(path, paint);
-            }
+            }            
         }
 
         protected override void FillFontMetricsCb(ref FontDesc font, ref FontMetrics fm)

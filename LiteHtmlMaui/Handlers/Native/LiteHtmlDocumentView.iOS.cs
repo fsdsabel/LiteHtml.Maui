@@ -32,6 +32,23 @@ namespace LiteHtmlMaui.Handlers.Native
         {
             if (!VerifyContext()) return;
 
+            if (bg.Color.Alpha > 0)
+            {
+                // we do not support multiple colors/thicknesses on borders or styles .. keep it simple, but this can be expanded if necessary
+
+                var color = Color(bg.Color);
+
+                var b = new Borders();
+                b.Radius = bg.BorderRadius;
+                var position = bg.OriginBox;
+
+                using var path = CreateRoundedRect(ref b, ref position, true);
+                _hdc.AddPath(path);
+                _hdc.SetStrokeColor(color);
+                _hdc.SetFillColor(color);
+                _hdc.DrawPath(CGPathDrawingMode.FillStroke);
+            }
+
             if (!string.IsNullOrEmpty(bg.Image))
             {
                 // draw image
@@ -61,24 +78,8 @@ namespace LiteHtmlMaui.Handlers.Native
                         }
                         _hdc.RestoreState();
                     }
-                    img.Release();                    
+                    img.Release();
                 }
-            }
-            else
-            {
-                // we do not support multiple colors/thicknesses on borders or styles .. keep it simple, but this can be expanded if necessary
-
-                var color = Color(bg.Color);
-
-                var b = new Borders();
-                b.Radius = bg.BorderRadius;
-                var position = bg.OriginBox;
-                
-                using var path = CreateRoundedRect(ref b, ref position, true);
-                _hdc.AddPath(path);
-                _hdc.SetStrokeColor(color);
-                _hdc.SetFillColor(color);
-                _hdc.DrawPath(CGPathDrawingMode.FillStroke);
             }
         }
 

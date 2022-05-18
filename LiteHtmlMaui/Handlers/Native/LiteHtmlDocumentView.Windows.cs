@@ -3,17 +3,8 @@ using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Numerics;
-using System.Threading;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Text;
 using Color = Windows.UI.Color;
 using FontWeight = Windows.UI.Text.FontWeight;
@@ -79,6 +70,20 @@ namespace LiteHtmlMaui.Handlers.Native
         {
             if (_drawingSession == null) return;
 
+            if (bg.Color.Alpha > 0)
+            {
+                // we do not support multiple colors/thicknesses on borders or styles .. keep it simple, but this can be expanded if necessary                
+                var color = bg.Color;
+                using var brush = new CanvasSolidColorBrush(_drawingSession.Device, Color.FromArgb(color.Alpha, color.Red, color.Green, color.Blue));
+
+
+                var b = new Borders();
+                b.Radius = bg.BorderRadius;
+                var position = bg.OriginBox;
+                using var path = CreateRoundedRect(_drawingSession.Device, ref b, ref position, true);
+
+                _drawingSession.FillGeometry(path, brush);
+            }
 
 
             if (!string.IsNullOrEmpty(bg.Image))
@@ -86,7 +91,7 @@ namespace LiteHtmlMaui.Handlers.Native
                 // draw image
                 var img = GetImage(CombineUrl(bg.BaseUrl, bg.Image));
                 if (img != null)
-                {
+                {                    
                     if (bg.repeat == background_repeat.background_repeat_no_repeat)
                     {
                         _drawingSession.DrawImage(
@@ -100,6 +105,8 @@ namespace LiteHtmlMaui.Handlers.Native
                         imgBrush.SourceRectangle = img.Image.GetBounds(_drawingSession.Device);
                         imgBrush.ExtendX = CanvasEdgeBehavior.Wrap;
                         imgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+
+                        imgBrush.Transform = Matrix3x2.CreateTranslation((float)rect.X, (float)rect.Y);
 
                         switch (bg.repeat)
                         {
@@ -116,20 +123,6 @@ namespace LiteHtmlMaui.Handlers.Native
                     }
                     img.Release();
                 }
-            }
-            else
-            {
-                // we do not support multiple colors/thicknesses on borders or styles .. keep it simple, but this can be expanded if necessary                
-                var color = bg.Color;
-                using var brush = new CanvasSolidColorBrush(_drawingSession.Device, Color.FromArgb(color.Alpha, color.Red, color.Green, color.Blue));
-
-
-                var b = new Borders();
-                b.Radius = bg.BorderRadius;
-                var position = bg.OriginBox;
-                using var path = CreateRoundedRect(_drawingSession.Device, ref b, ref position, true);
-
-                _drawingSession.FillGeometry(path, brush);
             }
         }
 
