@@ -87,10 +87,33 @@ namespace LiteHtmlMaui.Handlers.Native
                 var img = GetImage(CombineUrl(bg.BaseUrl, bg.Image));
                 if (img != null)
                 {
-                    _drawingSession.DrawImage(
-                        img.Image,
-                        new Rect(bg.PositionX, bg.PositionY, bg.ImageSize.Width, bg.ImageSize.Height),
-                        img.Image.GetBounds(_drawingSession.Device));
+                    var rect = new Rect(bg.PositionX, bg.PositionY, bg.ClipBox.Width, bg.ClipBox.Height);
+                    if (bg.repeat == background_repeat.background_repeat_no_repeat)
+                    {
+                        _drawingSession.DrawImage(
+                                img.Image,
+                                new Rect(rect.X, rect.Y, bg.ImageSize.Width, bg.ImageSize.Height),
+                                img.Image.GetBounds(_drawingSession.Device));
+                    } else
+                    {
+                        using var imgBrush = new CanvasImageBrush(_drawingSession.Device, img.Image);
+                        imgBrush.SourceRectangle = img.Image.GetBounds(_drawingSession.Device);
+                        imgBrush.ExtendX = CanvasEdgeBehavior.Wrap;
+                        imgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+
+                        switch (bg.repeat)
+                        {
+                            case background_repeat.background_repeat_repeat:
+                                _drawingSession.FillRectangle(rect, imgBrush);
+                                break;
+                            case background_repeat.background_repeat_repeat_x:
+                                _drawingSession.FillRectangle(new Rect(rect.X, rect.Y, rect.Width, imgBrush.SourceRectangle.Value.Height), imgBrush);
+                                break;
+                            case background_repeat.background_repeat_repeat_y:
+                                _drawingSession.FillRectangle(new Rect(rect.X, rect.Y, imgBrush.SourceRectangle.Value.Width, rect.Height), imgBrush);
+                                break;
+                        }
+                    }
                 }
             }
             else

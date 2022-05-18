@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
@@ -102,12 +102,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Html\BackgroundImages.html" />
 	  <None Remove="Resources\Html\Borders.html" />
 	  <None Remove="Resources\Html\Images.html" />
 	  <None Remove="Resources\Html\Text.html" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <EmbeddedResource Include="Resources\Html\BackgroundImages.html" />
 	  <EmbeddedResource Include="Resources\Html\Images.html" />
 	  <EmbeddedResource Include="Resources\Html\master.css" />
 	  <EmbeddedResource Include="Resources\Html\Borders.html" />
@@ -122,6 +124,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="BackgroundImagesPage.xaml.cs">
+	    <DependentUpon>BackgroundImagesPage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="ImagesPage.xaml.cs">
 	    <DependentUpon>ImagesPage.xaml</DependentUpon>
 	  </Compile>
@@ -138,6 +143,9 @@
 
 	<ItemGroup>
 	  <MauiXaml Update="DynamicPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="BackgroundImagesPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="TextComparisonPage.xaml">

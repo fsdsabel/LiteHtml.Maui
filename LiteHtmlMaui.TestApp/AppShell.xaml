@@ -31,6 +31,11 @@
         Route="Images" />
 
     <ShellContent
+        Title="Background Images"
+        ContentTemplate="{DataTemplate local:BackgroundImagesPage}"
+        Route="BackgroundImages" />
+
+    <ShellContent
         Title="Dynamic"
         ContentTemplate="{DataTemplate local:DynamicPage}"
         Route="Dynamic" />
