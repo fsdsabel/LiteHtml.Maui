@@ -38,8 +38,30 @@ namespace LiteHtmlMaui.Handlers.Native
                 var img = GetImage(CombineUrl(bg.BaseUrl, bg.Image));
                 if (img != null)
                 {
-                    img.Image.Draw(new CGRect(bg.PositionX, bg.PositionY, bg.ImageSize.Width, bg.ImageSize.Height));
-                    img.Release();
+                    if (bg.repeat == background_repeat.background_repeat_no_repeat)
+                    {
+                        img.Image.Draw(new CGRect(bg.PositionX, bg.PositionY, bg.ImageSize.Width, bg.ImageSize.Height));
+                    }
+                    else
+                    {
+                        var rect = new CGRect(bg.PositionX, bg.PositionY, bg.ClipBox.Width, bg.ClipBox.Height);
+                        _hdc.SaveState();
+                        _hdc.SetPatternPhase(new CGSize(rect.Location));
+                        switch (bg.repeat)
+                        {
+                            case background_repeat.background_repeat_repeat:
+                                img.Image.DrawAsPatternInRect(rect);
+                                break;
+                            case background_repeat.background_repeat_repeat_x:
+                                img.Image.DrawAsPatternInRect(new CGRect(rect.Location, new CGSize(rect.Width, bg.ImageSize.Height)));
+                                break;
+                            case background_repeat.background_repeat_repeat_y:
+                                img.Image.DrawAsPatternInRect(new CGRect(rect.Location, new CGSize(bg.ImageSize.Width, rect.Height)));
+                                break;
+                        }
+                        _hdc.RestoreState();
+                    }
+                    img.Release();                    
                 }
             }
             else
