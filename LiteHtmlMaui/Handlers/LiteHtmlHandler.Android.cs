@@ -143,21 +143,29 @@ namespace LiteHtmlMaui.Handlers
 
     }
 
-
+    /// <summary>
+    /// LiteHtml MAUI Handler for Android
+    /// </summary>
     public partial class LiteHtmlHandler : ViewHandler<ILiteHtml, AndroidLiteHtmlView>
     {
-       
+        /// <inheritdoc />
         protected override AndroidLiteHtmlView CreatePlatformView()
         {
             var view = new AndroidLiteHtmlView(Context!);            
             return view;
         }
 
+        /// <summary>
+        /// Maps HTML
+        /// </summary>
         public static void MapHtml(LiteHtmlHandler handler, ILiteHtml liteHtml)
         {
             handler.PlatformView.Html = liteHtml.Html;
         }
 
+        /// <summary>
+        /// Maps a source
+        /// </summary>
         public static void MapSource(LiteHtmlHandler handler, ILiteHtml liteHtml)
         {
             if (liteHtml.Source != null)
@@ -166,6 +174,9 @@ namespace LiteHtmlMaui.Handlers
             }
         }
 
+        /// <summary>
+        /// Maps the command
+        /// </summary>
         public static void MapCommand(LiteHtmlHandler handler, ILiteHtml liteHtml)
         {
             handler.PlatformView.Command = liteHtml.Command;

@@ -172,14 +172,17 @@ namespace LiteHtmlMaui.Handlers.Native
             if (stream != null)
             {
                 using var reader = new StreamReader(stream);
+#pragma warning disable CS0162 // Unreachable code detected
                 if (LiteHtmlInterop.InteropCharSet == CharSet.Ansi)
                 {
                     text = Marshal.StringToHGlobalAnsi(reader.ReadToEnd());
                 }
                 else
                 {
+
                     text = Marshal.StringToHGlobalUni(reader.ReadToEnd());
                 }
+#pragma warning restore CS0162 // Unreachable code detected
             }
         }
 

@@ -4,6 +4,9 @@ using LiteHtmlMaui.Handlers;
 
 namespace Microsoft.Maui.Hosting
 {
+    /// <summary>
+    /// HostBuilder Extensions
+    /// </summary>
     public static class LiteHtmlAppHostBuilderExtensions
     {
         /// <summary>

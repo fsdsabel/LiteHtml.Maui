@@ -2,6 +2,9 @@
 
 namespace Microsoft.Maui.Hosting
 {
+    /// <summary>
+    /// LiteHtml configuration extension methods
+    /// </summary>
     public static class LiteHtmlConfigurationBuilderExtensions
     {
         /// <summary>

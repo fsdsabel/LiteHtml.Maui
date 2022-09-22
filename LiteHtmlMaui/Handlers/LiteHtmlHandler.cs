@@ -7,6 +7,9 @@ namespace LiteHtmlMaui.Handlers
 {
     public partial class LiteHtmlHandler 
     {
+        /// <summary>
+        /// Mapper Functions
+        /// </summary>
         public static PropertyMapper<ILiteHtml, LiteHtmlHandler> LiteHtmlMapper = new PropertyMapper<ILiteHtml, LiteHtmlHandler>(ViewHandler.ViewMapper)
         {
             [nameof(ILiteHtml.Html)] = MapHtml,
@@ -14,10 +17,16 @@ namespace LiteHtmlMaui.Handlers
             [nameof(ILiteHtml.Command)] = MapCommand
         };
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public LiteHtmlHandler() : base(LiteHtmlMapper)
         {
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public LiteHtmlHandler(PropertyMapper mapper) : base(mapper)
         {
 

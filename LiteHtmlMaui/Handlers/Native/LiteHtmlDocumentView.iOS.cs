@@ -25,7 +25,7 @@ namespace LiteHtmlMaui.Handlers.Native
         protected override Task<UIImage> CreatePlatformBitmapAsync(Stream stream)
         {            
             using var imageData = NSData.FromStream(stream);
-            return Task.FromResult(UIImage.LoadFromData(imageData) ?? throw new InvalidOperationException("Cannot create platform bitmap from stream."));
+            return Task.FromResult(UIImage.LoadFromData(imageData!) ?? throw new InvalidOperationException("Cannot create platform bitmap from stream."));
         }
 
         protected override void DrawBackgroundCb(ref BackgroundPaint bg)

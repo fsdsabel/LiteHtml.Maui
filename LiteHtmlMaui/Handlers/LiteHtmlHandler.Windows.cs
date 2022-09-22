@@ -15,9 +15,11 @@ using Microsoft.UI.Xaml;
 
 namespace LiteHtmlMaui.Handlers
 {
-    // TODO: use real dpi (canvas is in dips: https://microsoft.github.io/Win2D/WinUI2/html/DPI.htm
-    // TODO: move style from app.xaml to generic.xaml?
+    // TODO: use real dpi (canvas is in dips: https://microsoft.github.io/Win2D/WinUI2/html/DPI.htm    
     // TODO: clipping
+    /// <summary>
+    /// Windows implementation
+    /// </summary>
     public class WindowsLiteHtmlControl : Control
     {
         private WindowsLiteHtmlDocumentView _documentView;
@@ -30,6 +32,9 @@ namespace LiteHtmlMaui.Handlers
         private CanvasControl? _canvas;
         private double _lastRasterizationScale = 1.0;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public WindowsLiteHtmlControl()
         {
             DefaultStyleKey = typeof(WindowsLiteHtmlControl);
@@ -46,6 +51,7 @@ namespace LiteHtmlMaui.Handlers
             }
         }
 
+        /// <inheritdoc />
         protected override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
@@ -132,6 +138,9 @@ namespace LiteHtmlMaui.Handlers
             return await client.GetStreamAsync(url);
         }
 
+        /// <summary>
+        /// Loaded HTML
+        /// </summary>
         public string? Html
         {
             get => _html;
@@ -141,26 +150,12 @@ namespace LiteHtmlMaui.Handlers
                 {
                     LoadHtml(value, null, null);
                 }
-
-                /*if (IsLoaded)
-                {
-                    if (value != null && _html != value)
-                    {
-                        _html = value;
-                        _externalResourceResolver = null;
-                        _documentView?.LoadHtml(value);
-                        _canvas?.Invalidate();
-                        InvalidateMeasure();
-                    }
-                }
-                else
-                {
-                    _html = value;
-                    _userCss = "";
-                }*/
             }
         }
 
+        /// <summary>
+        /// Loads the given HTML and CSS
+        /// </summary>
         public void LoadHtml(string? html, string? userCss, Func<string, Task<Stream?>>? resourceResolver)
         {
             _html = html;
@@ -177,7 +172,9 @@ namespace LiteHtmlMaui.Handlers
             }
         }        
 
-
+        /// <summary>
+        /// Anchor command
+        /// </summary>
         public ICommand? Command { get; set; }
 
         private void OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -187,7 +184,7 @@ namespace LiteHtmlMaui.Handlers
         }
 
 
-
+        /// <inheritdoc />
         protected override Size MeasureOverride(Size availableSize)
         {
             _documentView.SetViewportSize(new Microsoft.Maui.Graphics.Size(availableSize.Width, availableSize.Height));
@@ -199,6 +196,7 @@ namespace LiteHtmlMaui.Handlers
             return result;
         }
 
+        /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
             _documentView.SetViewportSize(new Microsoft.Maui.Graphics.Size(finalSize.Width, finalSize.Height));
@@ -207,27 +205,29 @@ namespace LiteHtmlMaui.Handlers
             return finalSize;
         }
 
-        
 
+        /// <inheritdoc />
         protected override void OnPointerMoved(PointerRoutedEventArgs e)
         {
             ReportEvent(LiteHtmlEvent.Move, e);
             base.OnPointerMoved(e);
         }
 
-
+        /// <inheritdoc />
         protected override void OnPointerPressed(PointerRoutedEventArgs e)
         {
             ReportEvent(LiteHtmlEvent.Down, e);
             base.OnPointerPressed(e);
         }
 
+        /// <inheritdoc />
         protected override void OnPointerReleased(PointerRoutedEventArgs e)
         {
             ReportEvent(LiteHtmlEvent.Up, e);
             base.OnPointerReleased(e);
         }
 
+        /// <inheritdoc />
         protected override void OnPointerExited(PointerRoutedEventArgs e)
         {
             ReportEvent(LiteHtmlEvent.Leave, e);
@@ -244,19 +244,28 @@ namespace LiteHtmlMaui.Handlers
         }
     }
 
-
+    /// <summary>
+    /// LiteHtml MAUI Handler for Windows
+    /// </summary>
     public partial class LiteHtmlHandler : ViewHandler<ILiteHtml, WindowsLiteHtmlControl>
     {
+        /// <inheritdoc />
         protected override WindowsLiteHtmlControl CreatePlatformView()
         {
             return new WindowsLiteHtmlControl();
         }
 
+        /// <summary>
+        /// Maps HTML
+        /// </summary>
         public static void MapHtml(LiteHtmlHandler handler, ILiteHtml liteHtml)
         {
             handler.PlatformView.Html = liteHtml.Html;
         }
 
+        /// <summary>
+        /// Maps a source
+        /// </summary>
         public static void MapSource(LiteHtmlHandler handler, ILiteHtml liteHtml)
         {
             if (liteHtml.Source != null)
@@ -265,6 +274,9 @@ namespace LiteHtmlMaui.Handlers
             }
         }
 
+        /// <summary>
+        /// Maps the command
+        /// </summary>
         public static void MapCommand(LiteHtmlHandler handler, ILiteHtml liteHtml)
         {
             handler.PlatformView.Command = liteHtml.Command;
