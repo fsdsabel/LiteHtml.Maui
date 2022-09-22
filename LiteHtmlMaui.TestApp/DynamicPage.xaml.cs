@@ -23,7 +23,7 @@ public class DynamicPageViewModel : INotifyPropertyChanged
     {
         public string Html { get; set; }
 
-        public string Css => "";
+        public string Css => "body { background:#888; }";
 
         public Task<Stream> GetStreamForUrlAsync(string url)
         {

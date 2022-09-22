@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LiteHtmlMaui.TestApp", "Lit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LiteHtmlMaui", "LiteHtmlMaui\LiteHtmlMaui.csproj", "{54A27001-78F1-47C9-A844-EE20BB0A946D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App1", "App1\App1.csproj", "{62CB2F40-B5BF-4B8A-9270-69DD4830E401}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6D1ADD5D-A986-4379-BE4E-DFB91CA90F19}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
@@ -66,30 +64,6 @@ Global
 		{54A27001-78F1-47C9-A844-EE20BB0A946D}.Release|x64.Build.0 = Release|Any CPU
 		{54A27001-78F1-47C9-A844-EE20BB0A946D}.Release|x86.ActiveCfg = Release|Any CPU
 		{54A27001-78F1-47C9-A844-EE20BB0A946D}.Release|x86.Build.0 = Release|Any CPU
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|Any CPU.Build.0 = Debug|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|Any CPU.Deploy.0 = Debug|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|arm64.ActiveCfg = Debug|arm64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|arm64.Build.0 = Debug|arm64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|arm64.Deploy.0 = Debug|arm64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|x64.ActiveCfg = Debug|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|x64.Build.0 = Debug|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|x64.Deploy.0 = Debug|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|x86.ActiveCfg = Debug|x86
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|x86.Build.0 = Debug|x86
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Debug|x86.Deploy.0 = Debug|x86
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|Any CPU.ActiveCfg = Release|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|Any CPU.Build.0 = Release|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|Any CPU.Deploy.0 = Release|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|arm64.ActiveCfg = Release|arm64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|arm64.Build.0 = Release|arm64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|arm64.Deploy.0 = Release|arm64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|x64.ActiveCfg = Release|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|x64.Build.0 = Release|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|x64.Deploy.0 = Release|x64
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|x86.ActiveCfg = Release|x86
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|x86.Build.0 = Release|x86
-		{62CB2F40-B5BF-4B8A-9270-69DD4830E401}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

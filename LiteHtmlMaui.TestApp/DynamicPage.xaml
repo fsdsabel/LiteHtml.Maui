@@ -6,11 +6,11 @@
              x:Class="LiteHtmlMaui.TestApp.DynamicPage"
               BackgroundColor="White">
     <ContentPage.Content>
-        <ScrollView>
-            <StackLayout>
-                <html:LiteHtml Margin="3" Source="{Binding HtmlSource}" />
-                <Button HorizontalOptions="StartAndExpand" Text="Update" Command="{Binding UpdateCommand}"></Button>
-            </StackLayout>
+        <ScrollView VerticalScrollBarVisibility="Always">
+            <VerticalStackLayout>
+                <html:LiteHtml x:Name="html" Margin="3" Source="{Binding HtmlSource}" />
+                <Button Grid.Row="1" HorizontalOptions="StartAndExpand" Text="Update" Command="{Binding UpdateCommand}"></Button>
+            </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>
 </ContentPage>
