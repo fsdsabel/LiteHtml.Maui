@@ -68,7 +68,7 @@
     <Product>LiteHtml.Maui</Product>
     <Description>LiteHtml.Maui is a library for Microsoft.Maui that supports rendering of more complex HTML than a Label can without the overhead of a real WebView.</Description>
     <PackageTags>litehtml;maui;html</PackageTags>
-
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsiOS)' != 'True' AND '$(_MauiTargetPlatformIsMacCatalyst)' != 'True' ">

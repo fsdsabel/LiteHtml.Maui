@@ -1,20 +1,7 @@
-﻿using LiteHtmlMaui.Controls;
-using LiteHtmlMaui.Hosting;
-using Microsoft.Maui.Graphics;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
-using System.IO;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace LiteHtmlMaui.Handlers.Native
 {
@@ -137,9 +124,6 @@ namespace LiteHtmlMaui.Handlers.Native
                 {
                     Task.Run(async () =>
                     {
-#if DEBUG
-                        await Task.Delay(1000);
-#endif
                         var ibmp = await _bitmaps.GetOrCreateImageAsync(url, LoadResourceAsync);
                         if (ibmp != null)
                         {

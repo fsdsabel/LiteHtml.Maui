@@ -1,12 +1,9 @@
-﻿using LiteHtmlMaui.Hosting;
-
-namespace LiteHtmlMaui.TestApp;
+﻿namespace LiteHtmlMaui.TestApp;
 
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp() 
     {
-       // Thread.Sleep(TimeSpan.FromSeconds(10)); 
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()

@@ -1,4 +1,4 @@
-﻿namespace LiteHtmlMaui.Hosting
+﻿namespace Microsoft.Maui.Hosting
 {
     internal class LiteHtmlConfiguration : ILiteHtmlConfiguration
     {

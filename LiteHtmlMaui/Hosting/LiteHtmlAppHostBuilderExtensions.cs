@@ -2,7 +2,7 @@
 using LiteHtmlMaui.Controls;
 using LiteHtmlMaui.Handlers;
 
-namespace LiteHtmlMaui.Hosting
+namespace Microsoft.Maui.Hosting
 {
     public static class LiteHtmlAppHostBuilderExtensions
     {
@@ -18,10 +18,12 @@ namespace LiteHtmlMaui.Hosting
             {
                 handlers.AddLiteHtml();
             });
-            // builder.ConfigureServices<LiteHtmlConfigurationBuilder>((_, configBuilder) => configureDelegate(configBuilder));
             return builder;
         }
 
+        /// <summary>
+        /// Adds LiteHtml to the list of available control handlers.
+        /// </summary>
         public static IMauiHandlersCollection AddLiteHtml(this IMauiHandlersCollection handlersCollection)
         {
             handlersCollection.AddHandler<LiteHtml, LiteHtmlHandler>();

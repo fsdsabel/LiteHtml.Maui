@@ -1,6 +1,6 @@
 ﻿using LiteHtmlMaui.Resources;
 
-namespace LiteHtmlMaui.Hosting
+namespace Microsoft.Maui.Hosting
 {
     public static class LiteHtmlConfigurationBuilderExtensions
     {
