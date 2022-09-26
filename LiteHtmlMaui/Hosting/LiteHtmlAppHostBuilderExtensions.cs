@@ -10,9 +10,9 @@ namespace Microsoft.Maui.Hosting
     public static class LiteHtmlAppHostBuilderExtensions
     {
         /// <summary>
-        /// Configure global LiteHtml settings.
+        /// Use LiteHtml with custom configuration.
         /// </summary>
-        public static MauiAppBuilder ConfigureLiteHtml(this MauiAppBuilder builder, Action<ILiteHtmlConfiguration> configureDelegate)
+        public static MauiAppBuilder UseLiteHtml(this MauiAppBuilder builder, Action<ILiteHtmlConfiguration> configureDelegate)
         {
             var config = new LiteHtmlConfiguration();
             configureDelegate(config);
@@ -22,6 +22,14 @@ namespace Microsoft.Maui.Hosting
                 handlers.AddLiteHtml();
             });
             return builder;
+        }
+
+        /// <summary>
+        /// Use LiteHtml with default configuration.
+        /// </summary>
+        public static MauiAppBuilder UseLiteHtml(this MauiAppBuilder builder)
+        {
+            return builder.UseLiteHtml(o => o.UseDefaultMasterStyleSheet());
         }
 
         /// <summary>
