@@ -4,8 +4,8 @@
       "commandName": "MsixPackage",
       "nativeDebugging": false
     },
-    "Profile 1": {
-      "commandName": "Project",
+    "Windows Machine with native Debugging": {
+      "commandName": "MsixPackage",
       "nativeDebugging": true
     }
   }
