@@ -4,5 +4,5 @@
              xmlns:local="clr-namespace:LiteHtmlMaui.TestApp"
              x:Class="LiteHtmlMaui.TestApp.ImagesPage" Background="White">
 
-    <local:HtmlComparisonView Html="{local:HtmlResource HtmlFile=Images.html}"></local:HtmlComparisonView>
+    <local:HtmlComparisonView Html="{local:HtmlResource HtmlFile=Images.html}" HtmlLinkClicked="HtmlComparisonView_HtmlLinkClicked"></local:HtmlComparisonView>
 </ContentPage>
