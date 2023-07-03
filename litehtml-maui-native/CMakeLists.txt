@@ -6,6 +6,7 @@ cmake_minimum_required (VERSION 3.19)
 set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO")
 set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "")
 
+set(BUILD_TESTING OFF CACHE INTERNAL "Turn off tests") 
 
 include(FetchContent)
 

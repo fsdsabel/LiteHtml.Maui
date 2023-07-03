@@ -16,53 +16,12 @@ using namespace std;
 
 std::vector<litehtml::document::ptr> g_documents;
 
-
-HCONTEXT create_context() {
-	return new litehtml::context();
-}
-
-void destroy_context(HCONTEXT context)
-{
-	delete context;
-}
-
-void load_master_stylesheet(HCONTEXT context, const litehtml::tchar_t* css)
-{
-	context->load_master_stylesheet(css);
-}
-
-LITEHTML_MAUI_EXPORT HDOCUMENT create_document(HCONTEXT context, maui_container_callbacks callbacks, const litehtml::tchar_t* html, const litehtml::tchar_t* user_css)
+LITEHTML_MAUI_EXPORT HDOCUMENT create_document(maui_container_callbacks callbacks, const char* html, const char* master_css, const char* user_css)
 {
 	LOG("create document: %s", html);
 	auto container = new litehtml::maui::maui_container(callbacks);
-	/*
-	auto pos = callbacks.get_client_rect();
-	auto p=callbacks.pt_to_px(199);
-	
-	defaults d;		 
-	callbacks.get_defaults(d);
-	callbacks.draw_text(0, d.font_face_name, nullptr, litehtml::web_color(1, 2, 3, p), pos);*/
-	/*
-	background_paint bp;
-	bp.baseurl = _t("hellp");
-	callbacks.draw_background(bp);
-	*//*
-	font_desc fd;
-	fd.faceName = _t("face");
-	font_metrics fm;
-	fd.fm = &fm;
-	callbacks.fill_font_metrics(&fd, &fm);
 
-	auto tw = callbacks.text_width(_t("some text"), &fd);
-
-	callbacks.pt_to_px(tw);
-	*/
-	css cssuser;	
-	const litehtml::tstring empty = _t("");
-	std::shared_ptr<document> tempdoc = document::createFromString(empty.c_str(), container, context);
-	std::shared_ptr<media_query_list> mlist;
-	cssuser.parse_stylesheet(user_css, empty.c_str(), tempdoc, mlist);
-	auto document = litehtml::document::createFromString(html, container, context, &cssuser);
+	auto document = litehtml::document::createFromString(html, container, master_css, user_css);
 	g_documents.push_back(document);
 	return document.get();
 }
@@ -131,4 +90,9 @@ LITEHTML_MAUI_EXPORT bool report_event(HDOCUMENT document, maui_event e, int x, 
 		return redraw.size() > 0;	
 	}
 	return false;
+}
+
+LITEHTML_MAUI_EXPORT void test(maui_container_callbacks callbacks) {
+
+
 }

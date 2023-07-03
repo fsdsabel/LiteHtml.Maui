@@ -35,11 +35,10 @@
 
 extern "C" {
 
-#define HCONTEXT litehtml::context*
 #define HDOCUMENT litehtml::document*
 
 	struct font_desc{
-		const litehtml::tchar_t * faceName;
+		const char * faceName;
 		int size;
 		int weight;
 		litehtml::font_style italic;
@@ -61,15 +60,15 @@ extern "C" {
 			culture = nullptr;
 		}
 		int font_size;
-		litehtml::tchar_t* font_face_name;
-		litehtml::tchar_t* language;
-		litehtml::tchar_t* culture;
+		char* font_face_name;
+		char* language;
+		char* culture;
 	};
 
 	struct maui_background_paint
 	{
-		const litehtml::tchar_t*					image;
-		const litehtml::tchar_t*					baseurl;
+		const char*					image;
+		const char*					baseurl;
 		litehtml::background_attachment	attachment;
 		litehtml::background_repeat		repeat;
 		litehtml::web_color				color;
@@ -101,8 +100,8 @@ extern "C" {
 
 	struct maui_list_marker
 	{
-		const litehtml::tchar_t*	image;
-		const litehtml::tchar_t*	baseurl;
+		const char*	image;
+		const char*	baseurl;
 		litehtml::list_style_type	marker_type;
 		litehtml::web_color		color;
 		litehtml::position		pos;
@@ -111,20 +110,21 @@ extern "C" {
 	};
 
 
-	typedef int (*text_width)(const litehtml::tchar_t* text, font_desc* hFont);
+	typedef int (*text_width)(const char* text, font_desc* hFont);
 	typedef litehtml::position(*get_client_rect)();
-	typedef void(*draw_text)(litehtml::uint_ptr hdc, const litehtml::tchar_t* text, font_desc* hFont, litehtml::web_color color, const litehtml::position& pos);
+	typedef void(*draw_text)(litehtml::uint_ptr hdc, const char* text, font_desc* hFont, litehtml::web_color color, const litehtml::position& pos);
 	typedef void(*fill_font_metrics)(font_desc* hFont, litehtml::font_metrics* fm);
 	typedef void(*draw_background)(const maui_background_paint& bg);
-	typedef void(*set_cursor)(const litehtml::tchar_t* cursor);
+	typedef void(*set_cursor)(const char* cursor);
 	typedef void(*draw_borders)(const litehtml::borders& borders, const litehtml::position& draw_pos, bool root);
-	typedef void(*load_image)(const litehtml::tchar_t* src, const litehtml::tchar_t* baseurl, bool redraw_on_ready);
-	typedef void(*get_image_size)(const litehtml::tchar_t* src, const litehtml::tchar_t* baseurl, maui_size* size);
+	typedef void(*load_image)(const char* src, const char* baseurl, bool redraw_on_ready);
+	typedef void(*get_image_size)(const char* src, const char* baseurl, maui_size* size);
 	typedef void(*draw_list_marker)(const maui_list_marker& marker, font_desc* hFont);
 	typedef void(*get_defaults)(defaults& defaults);
-	typedef void(*on_anchor_click)(const litehtml::tchar_t* url);
+	typedef void(*on_anchor_click)(const char* url);
 	typedef int(*pt_to_px)(int pt);
-    typedef void(*import_css)(litehtml::tchar_t** text, const litehtml::tchar_t* url, litehtml::tchar_t** baseurl);
+    typedef void(*import_css)(char** text, const char* url, char** baseurl);
+    typedef void(*free_string)(char* str);
 
 
 	struct maui_container_callbacks {
@@ -143,6 +143,7 @@ extern "C" {
 		on_anchor_click on_anchor_click;
 		pt_to_px pt_to_px;
         import_css import_css;
+		free_string free_string;
 	};
 
 	enum maui_event {
@@ -154,13 +155,7 @@ extern "C" {
 	};
 
 
-	LITEHTML_MAUI_EXPORT HCONTEXT create_context();
-	
-	LITEHTML_MAUI_EXPORT void destroy_context(HCONTEXT context);
-
-	LITEHTML_MAUI_EXPORT void load_master_stylesheet(HCONTEXT context, const litehtml::tchar_t* css);
-
-	LITEHTML_MAUI_EXPORT HDOCUMENT create_document(HCONTEXT context, maui_container_callbacks callbacks, const litehtml::tchar_t* html, const litehtml::tchar_t* user_css);
+	LITEHTML_MAUI_EXPORT HDOCUMENT create_document(maui_container_callbacks callbacks, const char* html, const char* master_css, const char* user_css);
 
 	LITEHTML_MAUI_EXPORT void destroy_document(HDOCUMENT document);
 
@@ -169,4 +164,6 @@ extern "C" {
 	LITEHTML_MAUI_EXPORT void draw_document(HDOCUMENT document, void* hdc, maui_size size);
 
 	LITEHTML_MAUI_EXPORT bool report_event(HDOCUMENT document, maui_event e, int x, int y, int client_x, int client_y);
+
+	LITEHTML_MAUI_EXPORT void test(maui_container_callbacks callbacks);
 }

@@ -15,16 +15,13 @@
 namespace litehtml
 {
 	namespace maui {
-		tchar_t* dupstr(tchar_t* str) {
+		char* dupstr(char* str) {
 			if (str == nullptr) return nullptr;
-#ifdef LITEHTML_UTF8
-			return (tchar_t*)strdup(str);
-#else
-			return (tchar_t*)_wcsdup(str);
-#endif
+
+			return (char*)strdup(str);
 		}
 
-		litehtml::uint_ptr maui_container::create_font(const litehtml::tchar_t* faceName, int size, int weight, litehtml::font_style italic, unsigned int decoration, litehtml::font_metrics* fm)
+		litehtml::uint_ptr maui_container::create_font(const char* faceName, int size, int weight, litehtml::font_style italic, unsigned int decoration, litehtml::font_metrics* fm)
 		{
 			LOG("create_font");
 			font_desc* fd = new font_desc();
@@ -48,12 +45,12 @@ namespace litehtml
 			delete fd;
             _fonts.erase(hFont);
 		}
-		int maui_container::text_width(const litehtml::tchar_t* text, litehtml::uint_ptr hFont)
+		int maui_container::text_width(const char* text, litehtml::uint_ptr hFont)
 		{
 			LOG("text_width");
 			return _callbacks.text_width(text, _fonts.at(hFont));
 		}
-		void maui_container::draw_text(litehtml::uint_ptr hdc, const litehtml::tchar_t* text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position& pos)
+		void maui_container::draw_text(litehtml::uint_ptr hdc, const char* text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position& pos)
 		{
 			LOG("draw_text");
 			_callbacks.draw_text(hdc, text, _fonts.at(hFont), color, pos);
@@ -69,7 +66,7 @@ namespace litehtml
 			_callbacks.get_defaults(def);
 			return def.font_size;
 		}
-		const litehtml::tchar_t* maui_container::get_default_font_name() const
+		const char* maui_container::get_default_font_name() const
 		{
 			LOG("get_default_font_name");
 			defaults def;
@@ -91,12 +88,12 @@ namespace litehtml
 
 			_callbacks.draw_list_marker(maui_marker, _fonts.at(marker.font));
 		}
-		void maui_container::load_image(const litehtml::tchar_t* src, const litehtml::tchar_t* baseurl, bool redraw_on_ready)
+		void maui_container::load_image(const char* src, const char* baseurl, bool redraw_on_ready)
 		{
 			LOG("load_image");
 			_callbacks.load_image(src, baseurl, redraw_on_ready);
 		}
-		void maui_container::get_image_size(const litehtml::tchar_t* src, const litehtml::tchar_t* baseurl, litehtml::size& sz)
+		void maui_container::get_image_size(const char* src, const char* baseurl, litehtml::size& sz)
 		{
 			LOG("get_image_size");
 			maui_size size = { 0, 0 };
@@ -106,86 +103,78 @@ namespace litehtml
 			sz.height = size.height;
 		}
 
-		void maui_container::draw_background(litehtml::uint_ptr hdc, const litehtml::background_paint& bg)
+		void maui_container::draw_background(litehtml::uint_ptr hdc, const std::vector<litehtml::background_paint>& bg)
 		{
 			LOG("draw_background");
-			maui_background_paint mbg = maui_background_paint(bg);
-			_callbacks.draw_background(mbg);
+			for (auto ptr = bg.begin(); ptr < bg.end(); ptr++) {
+				maui_background_paint mbg = maui_background_paint(*ptr);
+				_callbacks.draw_background(mbg);
+			}
 		}
 		void maui_container::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders& borders, const litehtml::position& draw_pos, bool root)
 		{
 			LOG("draw_borders");
 			_callbacks.draw_borders(borders, draw_pos, root);
 		}
-		void maui_container::set_caption(const litehtml::tchar_t* caption)
+		void maui_container::set_caption(const char* caption)
 		{
 		}
-		void maui_container::set_base_url(const litehtml::tchar_t* base_url)
+		void maui_container::set_base_url(const char* base_url)
 		{
 		}
 		void maui_container::link(const std::shared_ptr<litehtml::document>& doc, const litehtml::element::ptr& el)
 		{
 		}
-		void maui_container::on_anchor_click(const litehtml::tchar_t* url, const litehtml::element::ptr& el)
+		void maui_container::on_anchor_click(const char* url, const litehtml::element::ptr& el)
 		{
 			LOG("on_anchor_click");
 			_callbacks.on_anchor_click(url);
 		}
-		void maui_container::set_cursor(const litehtml::tchar_t* cursor)
+		void maui_container::set_cursor(const char* cursor)
 		{
 			LOG("set_cursor");
 			_callbacks.set_cursor(cursor);
 		}
-		void maui_container::transform_text(litehtml::tstring& text, litehtml::text_transform tt)
+		void maui_container::transform_text(litehtml::string& text, litehtml::text_transform tt)
 		{
 			if (text.empty()) return;
 			switch (tt)
 			{
 			case litehtml::text_transform_capitalize:
-				#ifdef LITEHTML_UTF8
-				#else
 				if (!text.empty())
 				{
-					text[0] = std::towupper(text.at(0));
+					text[0] = std::toupper(text.at(0));
 				}
-				#endif		
 				break;
 			case litehtml::text_transform_uppercase:
-				#ifdef LITEHTML_UTF8
-				#else
-				for (std::basic_string<wchar_t>::iterator p = text.begin(); p != text.end(); ++p) {
-					*p = std::towupper(*p); 
+				for (std::basic_string<char>::iterator p = text.begin(); p != text.end(); ++p) {
+					*p = std::toupper(*p); 
 				}
-				#endif
 				break;
 			case litehtml::text_transform_lowercase:
-				#ifdef LITEHTML_UTF8
-
-				#else
-				for (std::basic_string<wchar_t>::iterator p = text.begin(); p != text.end(); ++p) {
-					*p = std::towlower(*p);
-				}
-				#endif			
+				for (std::basic_string<char>::iterator p = text.begin(); p != text.end(); ++p) {
+					*p = std::tolower(*p);
+				}		
 				break;
 			case litehtml::text_transform_none:
 				break;
 			}
 		}
-		void maui_container::import_css(litehtml::tstring& text, const litehtml::tstring& url, litehtml::tstring& baseurl)
+		void maui_container::import_css(litehtml::string& text, const litehtml::string& url, litehtml::string& baseurl)
 		{
-            litehtml::tchar_t* ptext;
-            litehtml::tchar_t* pbaseurl;
+            char* ptext;
+            char* pbaseurl;
             _callbacks.import_css(&ptext, url.c_str(), &pbaseurl);
             if (ptext) {
                 text = ptext;
-				free(ptext);
+				_callbacks.free_string(ptext);
             }
             if(pbaseurl) {
                 baseurl = pbaseurl;
-				free(pbaseurl);
+				_callbacks.free_string(pbaseurl);
             }
 		}
-		void maui_container::set_clip(const litehtml::position& pos, const litehtml::border_radiuses& bdr_radius, bool valid_x, bool valid_y)
+		void maui_container::set_clip(const litehtml::position& pos, const litehtml::border_radiuses& bdr_radius)
 		{
 		}
 		void maui_container::del_clip()
@@ -201,7 +190,7 @@ namespace litehtml
 			client.height = cbclient.height;
 			LOG("%u %u %u %u", client.x, client.y, client.width, client.height);
 		}
-		std::shared_ptr<litehtml::element> maui_container::create_element(const litehtml::tchar_t* tag_name, const litehtml::string_map& attributes, const std::shared_ptr<litehtml::document>& doc)
+		std::shared_ptr<litehtml::element> maui_container::create_element(const char* tag_name, const litehtml::string_map& attributes, const std::shared_ptr<litehtml::document>& doc)
 		{
 			// callback on element creation
 			/*if (!t_strcmp(tag_name, _t("li")))
@@ -222,7 +211,7 @@ namespace litehtml
 			media.height = client.height;			
 			LOG("%u %u", media.width, media.height);
 		}
-		void maui_container::get_language(litehtml::tstring& language, litehtml::tstring& culture) const
+		void maui_container::get_language(litehtml::string& language, litehtml::string& culture) const
 		{
 			LOG("get_language");
 			defaults def;
@@ -230,9 +219,9 @@ namespace litehtml
 			language = dupstr(def.language);
 			culture = dupstr(def.culture);
 		}
-		litehtml::tstring maui_container::resolve_color(const litehtml::tstring& color) const
+		litehtml::string maui_container::resolve_color(const litehtml::string& color) const
 		{
-			return litehtml::tstring();
+			return litehtml::string();
 		}
 
 		
