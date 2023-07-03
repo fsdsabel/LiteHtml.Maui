@@ -164,6 +164,4 @@ extern "C" {
 	LITEHTML_MAUI_EXPORT void draw_document(HDOCUMENT document, void* hdc, maui_size size);
 
 	LITEHTML_MAUI_EXPORT bool report_event(HDOCUMENT document, maui_event e, int x, int y, int client_x, int client_y);
-
-	LITEHTML_MAUI_EXPORT void test(maui_container_callbacks callbacks);
 }

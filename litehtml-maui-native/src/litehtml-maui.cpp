@@ -91,8 +91,3 @@ LITEHTML_MAUI_EXPORT bool report_event(HDOCUMENT document, maui_event e, int x, 
 	}
 	return false;
 }
-
-LITEHTML_MAUI_EXPORT void test(maui_container_callbacks callbacks) {
-
-
-}
