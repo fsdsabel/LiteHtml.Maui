@@ -14,7 +14,10 @@ namespace LiteHtmlMaui.Handlers
         {
             [nameof(ILiteHtml.Html)] = MapHtml,
             [nameof(ILiteHtml.Source)] = MapSource,
-            [nameof(ILiteHtml.Command)] = MapCommand
+            [nameof(ILiteHtml.Command)] = MapCommand,
+            [nameof(ILiteHtml.TextColor)] = MapTextColor,
+            [nameof(ILiteHtml.Font)] = MapFont,
+            [nameof(ILiteHtml.CharacterSpacing)] = MapCharacterSpacing,
         };
 
         /// <summary>

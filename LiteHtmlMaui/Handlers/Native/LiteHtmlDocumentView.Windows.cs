@@ -2,9 +2,12 @@
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
+using Microsoft.Maui;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Windows.UI.Text;
 using Color = Windows.UI.Color;
 using FontWeight = Windows.UI.Text.FontWeight;
@@ -37,13 +40,15 @@ namespace LiteHtmlMaui.Handlers.Native
         }
 
 
-        private CanvasDrawingSession? _drawingSession;        
+        private CanvasDrawingSession? _drawingSession;
+        private readonly IFontManager _fontManager;
         private readonly ICanvasResourceCreator _resourceCreator;
         private readonly Func<float> _dpiResolver;
         private readonly Action<string> _setCursorAction;
         private static readonly Dictionary<(string faceName, int weight, FontStyle fontStyle), CanvasFontMetrics> _fontMetricsCache = new Dictionary<(string faceName, int weight, FontStyle fontStyle), CanvasFontMetrics>();
 
         public WindowsLiteHtmlDocumentView(
+            IFontManager fontManager,
             ICanvasResourceCreator resourceCreator, 
             Func<float> dpiResolver,  
             LiteHtmlResolveResourceDelegate resolveResource,
@@ -53,6 +58,7 @@ namespace LiteHtmlMaui.Handlers.Native
         {
             _dpiResolver = dpiResolver;
             _setCursorAction = setCursorAction;
+            _fontManager = fontManager;
             _resourceCreator = resourceCreator;            
         }
 
@@ -242,8 +248,8 @@ namespace LiteHtmlMaui.Handlers.Native
             }
             
             _drawingSession.DrawTextLayout(textLayout, position.X, position.Y, brush);
-            
         }
+
 
         private CanvasFontMetrics GetCanvasFontMetrics(ref FontDesc font)
         {
@@ -342,10 +348,14 @@ namespace LiteHtmlMaui.Handlers.Native
         private CanvasTextFormat CreateTextFormatFromFontDesc(ref FontDesc fontDesc)
         {
             var format = new CanvasTextFormat();
+            
+            var font = Microsoft.Maui.Font.OfSize(fontDesc.FaceName, PxToPt(fontDesc.Size), (Microsoft.Maui.FontWeight)fontDesc.Weight);
 
-            format.FontFamily = fontDesc.FaceName;
-            format.FontSize = PxToPt(fontDesc.Size);
-            format.FontWeight = new FontWeight((ushort)fontDesc.Weight);
+            var familySource = _fontManager.GetFontFamily(font).Source;
+
+            format.FontFamily = familySource.StartsWith("ms-appx:///") ? familySource : fontDesc.FaceName;
+            format.FontSize = (float)_fontManager.GetFontSize(font);
+            format.FontWeight = font.ToFontWeight();
             format.FontStyle = fontDesc.Italic == FontStyle.fontStyleItalic ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Normal;
             format.Options = CanvasDrawTextOptions.Default;
             format.WordWrapping = CanvasWordWrapping.NoWrap;

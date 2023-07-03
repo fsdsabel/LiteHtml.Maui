@@ -17,12 +17,14 @@ namespace LiteHtmlMaui.Handlers.Native
     class AndroidLiteHtmlDocumentView : LiteHtmlDocumentView<Canvas, Bitmap, Typeface>
     {
         private readonly Context _context;
+        private readonly IFontManager _fontManager;
         private Canvas? _canvas;
 
-        public AndroidLiteHtmlDocumentView(Context context, LiteHtmlResolveResourceDelegate resolveResource, LiteHtmlRedrawView redrawView)
+        public AndroidLiteHtmlDocumentView(Context context, IFontManager fontManager, LiteHtmlResolveResourceDelegate resolveResource, LiteHtmlRedrawView redrawView)
             : base(resolveResource, redrawView)
         {
             _context = context;
+            _fontManager = fontManager;
         }
 
         protected override int PtToPxCb(int pt)

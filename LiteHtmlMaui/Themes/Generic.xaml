@@ -6,7 +6,7 @@
     <Style TargetType="controls:WindowsLiteHtmlControl">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="controls:WindowsLiteHtmlControl">
+                <ControlTemplate TargetType="controls:WindowsLiteHtmlControl">                    
                     <xaml:CanvasControl x:Name="Canvas" />
                 </ControlTemplate>
             </Setter.Value>

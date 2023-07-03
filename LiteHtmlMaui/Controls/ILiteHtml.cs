@@ -5,7 +5,7 @@ namespace LiteHtmlMaui.Controls
     /// <summary>
     /// Handler interface for <see cref="LiteHtml"/>
     /// </summary>
-    public interface ILiteHtml : IView
+    public interface ILiteHtml : IView, ITextStyle
     {
         /// <summary>
         /// HTML to load

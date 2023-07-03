@@ -12,9 +12,10 @@ namespace LiteHtmlMaui.Handlers
     /// </summary>
     public class IOSLiteHtmlView : UIView
     {
-        private string? _html;
+        private string? _html, _userCss;
         private IOSLiteHtmlDocumentView _documentView;
         private Func<string, Task<Stream?>>? _externalResourceResolver;
+        private readonly Dictionary<string, string> _controlCssProperties = new();
 
         /// <summary>
         /// Constructor
@@ -105,7 +106,10 @@ namespace LiteHtmlMaui.Handlers
         {
             _html = html;
             _externalResourceResolver = resourceResolver;
-            _documentView.LoadHtml(html, userCss ?? "");
+            _userCss = userCss;
+
+            var css = $"html{{ {string.Join("", _controlCssProperties.Select(kv => $"{kv.Key}:{kv.Value};"))} }}body{{margin:0;}}" + (userCss ?? "");
+            _documentView.LoadHtml(html, css);
             OnRedraw();
         }
 
@@ -113,6 +117,19 @@ namespace LiteHtmlMaui.Handlers
         /// Anchor command
         /// </summary>
         public ICommand? Command { get; set; }
+
+        internal void SetCssControlProperty(string name, string? value)
+        {
+            if (value is null)
+            {
+                _controlCssProperties.Remove(name);
+            }
+            else
+            {
+                _controlCssProperties[name] = value;
+            }
+            LoadHtml(Html, _userCss, _externalResourceResolver);
+        }
 
         private async Task<Stream> ResolveResource(string url)
         {
@@ -188,6 +205,45 @@ namespace LiteHtmlMaui.Handlers
         public static void MapCommand(LiteHtmlHandler handler, ILiteHtml liteHtml)
         {
             handler.PlatformView.Command = liteHtml.Command;
+        }
+
+        /// <summary>
+        /// Maps the text color
+        /// </summary>
+        public static void MapTextColor(LiteHtmlHandler handler, ILiteHtml liteHtml)
+        {
+            if (liteHtml.TextColor is null)
+            {
+                handler.PlatformView.SetCssControlProperty("color", null);
+            }
+            else
+            {
+                handler.PlatformView.SetCssControlProperty("color", $"rgba({(byte)(liteHtml.TextColor.Red * 255)},{(byte)(liteHtml.TextColor.Green * 255)},{(byte)(liteHtml.TextColor.Blue * 255)},{liteHtml.TextColor.Alpha})");
+            }
+        }
+
+        /// <summary>
+        /// Maps the font
+        /// </summary>
+        public static void MapFont(LiteHtmlHandler handler, ILiteHtml liteHtml)
+        {
+            handler.PlatformView.SetCssControlProperty("font-size", $"{liteHtml.Font.Size}pt");
+            if (liteHtml.Font.Family != null)
+            {
+                handler.PlatformView.SetCssControlProperty("font-family", liteHtml.Font.Family);
+            }
+            else
+            {
+                handler.PlatformView.SetCssControlProperty("font-family", null);
+            }
+        }
+
+        /// <summary>
+        /// Maps the character spacing
+        /// </summary>
+        public static void MapCharacterSpacing(LiteHtmlHandler handler, ILiteHtml liteHtml)
+        {
+            handler.PlatformView.SetCssControlProperty("letter-spacing", $"{liteHtml.CharacterSpacing}pt");
         }
     }
 }

@@ -14,11 +14,12 @@ namespace LiteHtmlMaui.Handlers
     {
         private AndroidLiteHtmlDocumentView _documentView;
         private Func<string, Task<Stream?>>? _externalResourceResolver;
-        private string? _html;
+        private string? _html, _userCss;
+        private readonly Dictionary<string, string> _controlCssProperties = new();
 
-        public AndroidLiteHtmlView(Context context) : base(context)
+        public AndroidLiteHtmlView(Context context, IFontManager fontManager) : base(context)
         {
-            _documentView = new AndroidLiteHtmlDocumentView(context, ResolveResource, OnRedraw);
+            _documentView = new AndroidLiteHtmlDocumentView(context, fontManager, ResolveResource, OnRedraw);
             _documentView.AnchorClicked += OnAnchorClicked;                      
         }
 
@@ -63,12 +64,27 @@ namespace LiteHtmlMaui.Handlers
         {
             _html = html;
             _externalResourceResolver = resourceResolver;
+            _userCss = userCss;
 
-            _documentView.LoadHtml(html, userCss ?? "");
+            var css = $"html{{ {string.Join("", _controlCssProperties.Select(kv => $"{kv.Key}:{kv.Value};"))} }}body{{margin:0;}}" + (userCss ?? "");
+            _documentView.LoadHtml(html, css);
             OnRedraw();
         }
 
         public ICommand? Command { get; set; }
+
+        internal void SetCssControlProperty(string name, string? value)
+        {
+            if (value is null)
+            {
+                _controlCssProperties.Remove(name);
+            }
+            else
+            {
+                _controlCssProperties[name] = value;
+            }
+            LoadHtml(Html, _userCss, _externalResourceResolver);
+        }
 
         protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
@@ -151,7 +167,8 @@ namespace LiteHtmlMaui.Handlers
         /// <inheritdoc />
         protected override AndroidLiteHtmlView CreatePlatformView()
         {
-            var view = new AndroidLiteHtmlView(Context!);            
+            var fontManager = MauiContext!.Services.GetRequiredService<IFontManager>();
+            var view = new AndroidLiteHtmlView(Context!, fontManager);
             return view;
         }
 
@@ -180,6 +197,45 @@ namespace LiteHtmlMaui.Handlers
         public static void MapCommand(LiteHtmlHandler handler, ILiteHtml liteHtml)
         {
             handler.PlatformView.Command = liteHtml.Command;
+        }
+
+        /// <summary>
+        /// Maps the text color
+        /// </summary>
+        public static void MapTextColor(LiteHtmlHandler handler, ILiteHtml liteHtml)
+        {
+            if (liteHtml.TextColor is null)
+            {
+                handler.PlatformView.SetCssControlProperty("color", null);
+            }
+            else
+            {
+                handler.PlatformView.SetCssControlProperty("color", $"rgba({(byte)(liteHtml.TextColor.Red * 255)},{(byte)(liteHtml.TextColor.Green * 255)},{(byte)(liteHtml.TextColor.Blue * 255)},{liteHtml.TextColor.Alpha})");
+            }
+        }
+
+        /// <summary>
+        /// Maps the font
+        /// </summary>
+        public static void MapFont(LiteHtmlHandler handler, ILiteHtml liteHtml)
+        {
+            handler.PlatformView.SetCssControlProperty("font-size", $"{liteHtml.Font.Size}pt");
+            if (liteHtml.Font.Family != null)
+            {
+                handler.PlatformView.SetCssControlProperty("font-family", liteHtml.Font.Family);
+            }
+            else
+            {
+                handler.PlatformView.SetCssControlProperty("font-family", null);
+            }
+        }
+
+        /// <summary>
+        /// Maps the character spacing
+        /// </summary>
+        public static void MapCharacterSpacing(LiteHtmlHandler handler, ILiteHtml liteHtml)
+        {
+            handler.PlatformView.SetCssControlProperty("letter-spacing", $"{liteHtml.CharacterSpacing}pt");
         }
     }
 }

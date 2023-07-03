@@ -29,14 +29,17 @@ namespace LiteHtmlMaui.Handlers
         private string? _html;
         private Func<string, Task<Stream?>>? _externalResourceResolver;
         private string _userCss = "";
+        private readonly Dictionary<string, string> _controlCssProperties = new();
+        private readonly IFontManager _fontManager;
         private CanvasControl? _canvas;
         private double _lastRasterizationScale = 1.0;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public WindowsLiteHtmlControl()
+        public WindowsLiteHtmlControl(IFontManager fontManager)
         {
+            _fontManager = fontManager;
             DefaultStyleKey = typeof(WindowsLiteHtmlControl);
             CreateDocumentView(SharedDevice);
             Loaded += OnLoaded;
@@ -56,7 +59,7 @@ namespace LiteHtmlMaui.Handlers
         {
             base.OnApplyTemplate();
             _canvas = (CanvasControl) GetTemplateChild("Canvas");
-            _canvas.Draw += OnDraw;
+            _canvas.Draw += OnDraw;            
             _canvas.CustomDevice = SharedDevice;
             XamlRoot.Changed += (s, e) =>
             {
@@ -65,7 +68,7 @@ namespace LiteHtmlMaui.Handlers
                     _lastRasterizationScale = XamlRoot?.RasterizationScale ?? 1;
                     _documentView.ReloadDocument();
                 }
-            };
+            };            
         }
 
         [MemberNotNull(nameof(_documentView))]
@@ -73,10 +76,11 @@ namespace LiteHtmlMaui.Handlers
         {
             
             _documentView = new WindowsLiteHtmlDocumentView(
+                _fontManager,
                 canvasResourceCreator,
                 () =>
                 {
-                    return (float)(96.0 * XamlRoot?.RasterizationScale ?? 96.0);
+                    return (float)(96.0 * XamlRoot?.RasterizationScale ?? 96.0);                    
                 },
                 ResolveResource,
                 () =>
@@ -161,8 +165,9 @@ namespace LiteHtmlMaui.Handlers
             _html = html;
             _externalResourceResolver = resourceResolver;
             if (IsLoaded)
-            {   
-                _documentView.LoadHtml(html, userCss ?? "");
+            {
+                var css = $"html{{ {string.Join("", _controlCssProperties.Select(kv => $"{kv.Key}:{kv.Value};"))} }}body{{margin:0;}}" + (userCss ?? "");
+                _documentView.LoadHtml(html, css);
                 _canvas?.Invalidate();
                 InvalidateMeasure();
             }
@@ -177,8 +182,23 @@ namespace LiteHtmlMaui.Handlers
         /// </summary>
         public ICommand? Command { get; set; }
 
+        internal void SetCssControlProperty(string name, string? value)
+        {
+            if (value is null)
+            {
+                _controlCssProperties.Remove(name);
+            }
+            else
+            {
+                _controlCssProperties[name] = value;
+            }
+            LoadHtml(Html, _userCss, _externalResourceResolver);
+        }
+
         private void OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
         {
+            sender.DpiScale = (float)XamlRoot.RasterizationScale;
+            args.DrawingSession.TextAntialiasing = Microsoft.Graphics.Canvas.Text.CanvasTextAntialiasing.Auto;
             args.DrawingSession.Clear((Background as Microsoft.UI.Xaml.Media.SolidColorBrush)?.Color ?? Colors.Transparent);
             _documentView?.DrawDocument(args.DrawingSession, (int)RenderSize.Width, (int)RenderSize.Height);
         }
@@ -192,7 +212,7 @@ namespace LiteHtmlMaui.Handlers
 
             
             var result = new Size(measuredSize.Width, measuredSize.Height);            
-            _canvas?.Measure(result);
+            _canvas?.Measure(new Size(result.Width, result.Height));
             return result;
         }
 
@@ -252,7 +272,8 @@ namespace LiteHtmlMaui.Handlers
         /// <inheritdoc />
         protected override WindowsLiteHtmlControl CreatePlatformView()
         {
-            return new WindowsLiteHtmlControl();
+            var fontManager = MauiContext!.Services.GetRequiredService<IFontManager>();
+            return new WindowsLiteHtmlControl(fontManager);
         }
 
         /// <summary>
@@ -280,6 +301,46 @@ namespace LiteHtmlMaui.Handlers
         public static void MapCommand(LiteHtmlHandler handler, ILiteHtml liteHtml)
         {
             handler.PlatformView.Command = liteHtml.Command;
+        }
+
+        /// <summary>
+        /// Maps the text color
+        /// </summary>
+        public static void MapTextColor(LiteHtmlHandler handler, ILiteHtml liteHtml)
+        {
+            if (liteHtml.TextColor is null)
+            {
+                handler.PlatformView.SetCssControlProperty("color", null);
+            }
+            else
+            {
+                handler.PlatformView.SetCssControlProperty("color", $"rgba({(byte)(liteHtml.TextColor.Red * 255)},{(byte)(liteHtml.TextColor.Green * 255)},{(byte)(liteHtml.TextColor.Blue * 255)},{liteHtml.TextColor.Alpha})");
+            }
+        }
+
+        /// <summary>
+        /// Maps the font
+        /// </summary>
+        public static void MapFont(LiteHtmlHandler handler, ILiteHtml liteHtml)
+        {  
+            
+            handler.PlatformView.SetCssControlProperty("font-size", $"{liteHtml.Font.Size}pt");
+            if (liteHtml.Font.Family != null)
+            {
+                handler.PlatformView.SetCssControlProperty("font-family", liteHtml.Font.Family);
+            }
+            else
+            {
+                handler.PlatformView.SetCssControlProperty("font-family", null);
+            }
+        }
+
+        /// <summary>
+        /// Maps the character spacing
+        /// </summary>
+        public static void MapCharacterSpacing(LiteHtmlHandler handler, ILiteHtml liteHtml)
+        {
+            handler.PlatformView.SetCssControlProperty("letter-spacing", $"{liteHtml.CharacterSpacing}pt");            
         }
     }
 }
