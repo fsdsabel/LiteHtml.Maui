@@ -1,4 +1,7 @@
-﻿using System;
+﻿#if WINDOWS
+#define UTF8_SUPPORTED
+#endif
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -24,6 +27,9 @@ namespace LiteHtmlMaui.Handlers.Native
     [StructLayout(LayoutKind.Sequential, CharSet = LiteHtmlInterop.InteropCharSet)]
     record struct FontDesc
     {
+        #if UTF8_SUPPORTED
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+        #endif
         public string FaceName;
         public int Size;
         public int Weight;
@@ -44,9 +50,9 @@ namespace LiteHtmlMaui.Handlers.Native
     [StructLayout(LayoutKind.Sequential)]
     struct WebColor
     {
-        public byte Blue;
-        public byte Green;
         public byte Red;
+        public byte Green;
+        public byte Blue;        
         public byte Alpha;
     }
 
@@ -54,8 +60,17 @@ namespace LiteHtmlMaui.Handlers.Native
     struct Defaults
     {
         public int FontSize;
+#if UTF8_SUPPORTED
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+#endif
         public string FontFaceName;
+#if UTF8_SUPPORTED
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+#endif
         public string Language;
+#if UTF8_SUPPORTED
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+#endif
         public string Culture;
     }
 
@@ -144,7 +159,13 @@ namespace LiteHtmlMaui.Handlers.Native
     [StructLayout(LayoutKind.Sequential, CharSet = LiteHtmlInterop.InteropCharSet)]
     struct BackgroundPaint
     {
+#if UTF8_SUPPORTED
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+#endif
         public string Image;
+#if UTF8_SUPPORTED
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+#endif
         public string BaseUrl;
         public background_attachment attachment;
         public background_repeat repeat;
@@ -197,7 +218,13 @@ namespace LiteHtmlMaui.Handlers.Native
     [StructLayout(LayoutKind.Sequential, CharSet = LiteHtmlInterop.InteropCharSet)]
     struct ListMarker
     {
+#if UTF8_SUPPORTED
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+#endif
         public string Image;
+#if UTF8_SUPPORTED
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+#endif
         public string BaseUrl;
         public list_style_type marker_type;
         public WebColor color;
@@ -208,13 +235,21 @@ namespace LiteHtmlMaui.Handlers.Native
 
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
+#if UTF8_SUPPORTED
+    delegate int TextWidthDelegate([In][MarshalAs(UnmanagedType.LPUTF8Str)] string text, [In] ref FontDesc font);
+#else
     delegate int TextWidthDelegate([In] string text, [In] ref FontDesc font);
+#endif
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     delegate Position GetClientRectDelegate();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
-    delegate void DrawTextDelegate([In] IntPtr hdc, [In] string text, [In] ref FontDesc font, [In] ref WebColor color, [In] ref Position position);
+#if UTF8_SUPPORTED
+    delegate void DrawTextDelegate([In] IntPtr hdc, [In] [MarshalAs(UnmanagedType.LPUTF8Str)] string text, [In] ref FontDesc font, [In] WebColor color, [In] ref Position position);
+#else
+    delegate void DrawTextDelegate([In] IntPtr hdc, [In] string text, [In] ref FontDesc font, [In] WebColor color, [In] ref Position position);
+#endif
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     delegate void FillFontMetricsDelegate([In] ref FontDesc font, [In, Out] ref FontMetrics fm);
@@ -223,16 +258,28 @@ namespace LiteHtmlMaui.Handlers.Native
     delegate void DrawBackgroundDelegate([In] ref BackgroundPaint bg);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
-    delegate void SetCursorDelegate([In]string cursor);
+#if UTF8_SUPPORTED
+    delegate void SetCursorDelegate([In][MarshalAs(UnmanagedType.LPUTF8Str)] string cursor);
+#else
+    delegate void SetCursorDelegate([In] string cursor);
+#endif
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     delegate void DrawBordersDelegate([In] ref Borders borders, [In] ref Position position, [In] bool root);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
+#if UTF8_SUPPORTED
+    delegate void LoadImageDelegate([In] string source, [In] [MarshalAs(UnmanagedType.LPUTF8Str)] string baseUrl, [In] bool redrawOnReady);
+#else
     delegate void LoadImageDelegate([In] string source, [In] string baseUrl, [In] bool redrawOnReady);
+#endif
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
+#if UTF8_SUPPORTED
+    delegate void GetImageSizeDelegate([In][MarshalAs(UnmanagedType.LPUTF8Str)] string source, [In][MarshalAs(UnmanagedType.LPUTF8Str)] string baseUrl, [In, Out] ref MauiSize size);
+#else
     delegate void GetImageSizeDelegate([In] string source, [In] string baseUrl, [In, Out] ref MauiSize size);
+#endif
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     delegate void DrawListMarkerDelegate([In] ref ListMarker listMarker, [In] ref FontDesc font);
@@ -241,14 +288,25 @@ namespace LiteHtmlMaui.Handlers.Native
     delegate void GetDefaultsDelegate(ref Defaults defaults);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
+#if UTF8_SUPPORTED
+    delegate void OnAnchorClickDelegate([In][MarshalAs(UnmanagedType.LPUTF8Str)] string url);
+#else
     delegate void OnAnchorClickDelegate([In] string url);
+#endif
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     delegate int PtToPxDelegate([In] int pt);
 
     // StringBuilder instead of IntPtr would be much more elegant but doesn't work for iOS
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
+#if UTF8_SUPPORTED
+    delegate void ImportCssDelegate([Out] out IntPtr text, [In][MarshalAs(UnmanagedType.LPUTF8Str)] string url, [Out] out IntPtr baseUrl);
+#else
     delegate void ImportCssDelegate([Out] out IntPtr text, [In] string url, [Out] out IntPtr baseUrl);
+#endif
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    delegate void FreeStringDelegate([In] IntPtr str);
 
     [StructLayout(LayoutKind.Sequential)]
     struct MauiContainerCallbacks
@@ -267,23 +325,7 @@ namespace LiteHtmlMaui.Handlers.Native
         public OnAnchorClickDelegate OnAnchorClick;
         public PtToPxDelegate PtToPx;
         public ImportCssDelegate ImportCss;
-    }
-
-    class LiteHtmlContextSafeHandle : SafeHandle
-    {
-        public LiteHtmlContextSafeHandle() 
-            : base(IntPtr.Zero, true)
-        {
-        }
-
-        public override bool IsInvalid => handle == IntPtr.Zero;
-
-        protected override bool ReleaseHandle()
-        {
-            LiteHtmlInterop.DestroyContext(this);
-            handle = IntPtr.Zero;
-            return true;
-        }
+        public FreeStringDelegate FreeString;
     }
 
     class LiteHtmlDocumentSafeHandle : SafeHandle
@@ -310,24 +352,21 @@ namespace LiteHtmlMaui.Handlers.Native
         public const CharSet InteropCharSet = CharSet.Ansi;
 #elif WINDOWS
         const string InteropDll = "litehtml-maui.dll";
-        public const CharSet InteropCharSet = CharSet.Unicode;
+        public const CharSet InteropCharSet = CharSet.Ansi;
 #elif IOS
         const string InteropDll = "__Internal";
         public const CharSet InteropCharSet = CharSet.Ansi;
 #else
         const string InteropDll = "liblitehtml-maui.so";
-        public const CharSet InteropCharSet = CharSet.Unicode;
+        public const CharSet InteropCharSet = CharSet.Ansi;
 #endif
 
-        [DllImport(InteropDll, EntryPoint = "create_context")]
-        public static extern LiteHtmlContextSafeHandle CreateContext();
-
-        [DllImport(InteropDll, EntryPoint = "destroy_context")]
-        public static extern void DestroyContext(LiteHtmlContextSafeHandle context);
-
-
         [DllImport(InteropDll, EntryPoint = "create_document", CharSet = InteropCharSet)]
-        public static extern LiteHtmlDocumentSafeHandle CreateDocument(LiteHtmlContextSafeHandle context, MauiContainerCallbacks callbacks, string html, string userCss);
+#if UTF8_SUPPORTED
+        public static extern LiteHtmlDocumentSafeHandle CreateDocument(MauiContainerCallbacks callbacks, [MarshalAs(UnmanagedType.LPUTF8Str)] string html, [MarshalAs(UnmanagedType.LPUTF8Str)] string? masterCss, [MarshalAs(UnmanagedType.LPUTF8Str)] string? userCss);
+#else
+        public static extern LiteHtmlDocumentSafeHandle CreateDocument(MauiContainerCallbacks callbacks, string html, string? masterCss, string? userCss);
+#endif
 
         [DllImport(InteropDll, EntryPoint = "destroy_document")]
         public static extern void DestroyDocument(IntPtr document);
@@ -337,10 +376,6 @@ namespace LiteHtmlMaui.Handlers.Native
 
         [DllImport(InteropDll, EntryPoint = "draw_document")]
         public static extern void DrawDocument(LiteHtmlDocumentSafeHandle document, IntPtr hdc, MauiSize size);
-
-
-        [DllImport(InteropDll, EntryPoint = "load_master_stylesheet", CharSet = InteropCharSet)]
-        public static extern void LoadMasterStylesheet(LiteHtmlContextSafeHandle context, string css);
 
         [DllImport(InteropDll, EntryPoint = "report_event")]
         public static extern bool ReportEvent(LiteHtmlDocumentSafeHandle document, LiteHtmlEvent e, int x, int y, int client_x, int client_y);

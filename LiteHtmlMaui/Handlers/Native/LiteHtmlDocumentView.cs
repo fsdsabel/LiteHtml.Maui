@@ -11,14 +11,11 @@ namespace LiteHtmlMaui.Handlers.Native
 
     abstract class LiteHtmlDocumentView
     {
-        private static LiteHtmlContextSafeHandle _context = null!;
-
-        protected LiteHtmlContextSafeHandle LiteHtmlContext => _context ?? throw new InvalidOperationException("LiteHtml not configured properly. Use ConfigureLiteHtml in Startup!");
+        protected static string? MasterStylesheet;
 
         internal static void Configure(ILiteHtmlConfiguration configuration)
         {
-            _context = LiteHtmlInterop.CreateContext();
-            LiteHtmlInterop.LoadMasterStylesheet(_context, configuration.MasterStyleSheet);
+            MasterStylesheet = configuration.MasterStyleSheet;
         }
     }
 
@@ -54,12 +51,12 @@ namespace LiteHtmlMaui.Handlers.Native
                 GetDefaults = GetDefaultsCb,
                 OnAnchorClick = OnAnchorClickCb,
                 PtToPx = PtToPxCb,
-                ImportCss = ImportCssCb
+                ImportCss = ImportCssCb,
+                FreeString = FreeStringCb
             };
             _resolveResource = resolveResource ?? throw new ArgumentNullException(nameof(resolveResource));
             _redrawView = redrawView ?? throw new ArgumentNullException(nameof(redrawView));
         }
-               
 
         public virtual void LoadHtml(string? html, string userCss = "")
         {
@@ -68,7 +65,7 @@ namespace LiteHtmlMaui.Handlers.Native
             _userCss = userCss;
             if (html != null)
             {
-                _document = LiteHtmlInterop.CreateDocument(LiteHtmlContext, _callbacks, html, userCss);
+                _document = LiteHtmlInterop.CreateDocument(_callbacks, html, MasterStylesheet, userCss);
             }
         }
 
@@ -80,7 +77,7 @@ namespace LiteHtmlMaui.Handlers.Native
             }
             if (_html != null)
             {
-                _document = LiteHtmlInterop.CreateDocument(LiteHtmlContext, _callbacks, _html, _userCss);
+                _document = LiteHtmlInterop.CreateDocument(_callbacks, _html, MasterStylesheet, _userCss);
             }
         }
 
@@ -140,7 +137,7 @@ namespace LiteHtmlMaui.Handlers.Native
         protected abstract void SetCursorCb(string cursor);
         protected abstract void DrawBackgroundCb(ref BackgroundPaint bg);
         protected abstract void FillFontMetricsCb(ref FontDesc font, ref FontMetrics fm);
-        protected abstract void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, ref WebColor color, ref Position position);
+        protected abstract void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, WebColor color, ref Position position);
         protected virtual Position GetClientRectCb()
         {
             return new Position
@@ -172,20 +169,14 @@ namespace LiteHtmlMaui.Handlers.Native
             if (stream != null)
             {
                 using var reader = new StreamReader(stream);
-#pragma warning disable CS0162 // Unreachable code detected
-                if (LiteHtmlInterop.InteropCharSet == CharSet.Ansi)
-                {
-                    text = Marshal.StringToHGlobalAnsi(reader.ReadToEnd());
-                }
-                else
-                {
-
-                    text = Marshal.StringToHGlobalUni(reader.ReadToEnd());
-                }
-#pragma warning restore CS0162 // Unreachable code detected
+                text = Marshal.StringToCoTaskMemUTF8(reader.ReadToEnd());
             }
         }
 
+        private void FreeStringCb(IntPtr str)
+        {
+            Marshal.FreeCoTaskMem(str);
+        }
 
         private static ConcurrentDictionary<FontDesc, TFont> _fontCache = new ConcurrentDictionary<FontDesc, TFont>();
 

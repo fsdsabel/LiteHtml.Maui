@@ -218,7 +218,7 @@ namespace LiteHtmlMaui.Handlers.Native
             }           
         }
 
-        protected override void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, ref WebColor color, ref Position position)
+        protected override void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, WebColor color, ref Position position)
         {
             if (_drawingSession == null) return;
 
@@ -477,15 +477,6 @@ namespace LiteHtmlMaui.Handlers.Native
                 if (v.Y < 0) v.Y = 0;
                 return v;
             }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if(disposing)
-            {
-               // _resourceCreator.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 
