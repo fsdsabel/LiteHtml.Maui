@@ -72,7 +72,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageProjectUrl>https://github.com/fsdsabel/LiteHtml.Maui</PackageProjectUrl>    
+    <PackageProjectUrl>https://github.com/fsdsabel/LiteHtml.Maui</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsiOS)' != 'True' AND '$(_MauiTargetPlatformIsMacCatalyst)' != 'True' ">
@@ -115,6 +116,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
