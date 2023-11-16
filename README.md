@@ -3,9 +3,9 @@
 LiteHtml.Maui is a cross platform library for rendering HTML content with Microsoft MAUI.
 It uses [litehtml](https://github.com/litehtml/litehtml) for parsing and layouting HTML. This library supports
 
-- Windows (.NET 6 and .NET 7)
-- Android (.NET 6 and .NET 7)
-- iOS (.NET 6 and .NET 7)
+- Windows (.NET 7 and .NET 8)
+- Android (.NET 7 and .NET 8)
+- iOS (.NET 7 and .NET 8)
 
 ## When to use
 

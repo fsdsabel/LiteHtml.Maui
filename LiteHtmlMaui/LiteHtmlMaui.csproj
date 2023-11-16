@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;net7.0-android;net7.0-ios;net6.0-android;net6.0-ios;net6.0-maccatalyst;net7.0-maccatalyst</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.19041.0;net7.0-windows10.0.19041.0</TargetFrameworks>		
+		<TargetFrameworks>net8.0;net7.0;net7.0-android;net7.0-ios;net8.0-android;net8.0-ios;net8.0-maccatalyst;net7.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0;net7.0-windows10.0.19041.0</TargetFrameworks>		
 		<UseMaui>true</UseMaui>
     <UseMauiEssentials>true</UseMauiEssentials>
 		<SingleProject>true</SingleProject>
@@ -61,7 +61,7 @@
     <_MauiTargetPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_MauiTargetPlatformIsmacOS>    
     <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">True</GeneratePackageOnBuild>
-    <Version>0.1.0-alpha.3</Version>
+    <Version>1.0.0</Version>
     <Nullable>enable</Nullable>
     <PackageId>LiteHtml.Maui</PackageId>
     <Authors>fsdsabel</Authors>
