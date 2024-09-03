@@ -26,5 +26,5 @@ jobs:
            # Artifact name
            name: ioslib
            # A file, directory or wildcard pattern that describes what to upload
-           path: ../LiteHtmlMaui/Platforms/iOS/NativeLibs/*.a
+           path: ${GITHUB_WORKSPACE}/LiteHtmlMaui/Platforms/iOS/NativeLibs/*.a
           
