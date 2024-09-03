@@ -1,9 +1,13 @@
 name: "Build"
 
 on:
-  workflow_dispatch:    
-    branches: [main]
-
+  pull_request:
+    branches: 
+      - main
+  push:
+    branches:
+      - "ci-test"
+  
 jobs:
   build_ios:
     runs-on: macos-latest
