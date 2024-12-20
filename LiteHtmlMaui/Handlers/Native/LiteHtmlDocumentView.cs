@@ -137,7 +137,7 @@ namespace LiteHtmlMaui.Handlers.Native
         protected abstract void SetCursorCb(string cursor);
         protected abstract void DrawBackgroundCb(ref BackgroundPaint bg);
         protected abstract void FillFontMetricsCb(ref FontDesc font, ref FontMetrics fm);
-        protected abstract void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, WebColor color, ref Position position);
+        protected abstract void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, ref WebColor color, ref Position position);
         protected virtual Position GetClientRectCb()
         {
             return new Position

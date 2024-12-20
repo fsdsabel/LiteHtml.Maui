@@ -181,7 +181,7 @@ namespace LiteHtmlMaui.Handlers.Native
             }
         }
 
-        protected override void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, WebColor color, ref Position position)
+        protected override void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, ref WebColor color, ref Position position)
         {
             if (!VerifyContext()) return;
 

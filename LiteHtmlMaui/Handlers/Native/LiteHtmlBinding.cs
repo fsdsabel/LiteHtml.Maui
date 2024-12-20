@@ -54,6 +54,7 @@ namespace LiteHtmlMaui.Handlers.Native
         public byte Green;
         public byte Blue;        
         public byte Alpha;
+        public bool IsCurrentColor;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = LiteHtmlInterop.InteropCharSet)]
@@ -246,9 +247,9 @@ namespace LiteHtmlMaui.Handlers.Native
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = LiteHtmlInterop.InteropCharSet)]
 #if UTF8_SUPPORTED
-    delegate void DrawTextDelegate([In] IntPtr hdc, [In] [MarshalAs(UnmanagedType.LPUTF8Str)] string text, [In] ref FontDesc font, [In] WebColor color, [In] ref Position position);
+    delegate void DrawTextDelegate([In] IntPtr hdc, [In] [MarshalAs(UnmanagedType.LPUTF8Str)] string text, [In] ref FontDesc font, [In] ref WebColor color, [In] ref Position position);
 #else
-    delegate void DrawTextDelegate([In] IntPtr hdc, [In] string text, [In] ref FontDesc font, [In] WebColor color, [In] ref Position position);
+    delegate void DrawTextDelegate([In] IntPtr hdc, [In] string text, [In] ref FontDesc font, [In] ref WebColor color, [In] ref Position position);
 #endif
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

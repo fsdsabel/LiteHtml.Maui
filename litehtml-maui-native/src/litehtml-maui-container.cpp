@@ -103,13 +103,23 @@ namespace litehtml
 			sz.height = size.height;
 		}
 
-		void maui_container::draw_background(litehtml::uint_ptr hdc, const std::vector<litehtml::background_paint>& bg)
-		{
-			LOG("draw_background");
-			for (auto ptr = bg.begin(); ptr < bg.end(); ptr++) {
-				maui_background_paint mbg = maui_background_paint(*ptr);
-				_callbacks.draw_background(mbg);
-			}
+		void maui_container::draw_image(litehtml::uint_ptr hdc, const litehtml::background_layer& layer, const std::string& url, const std::string& base_url) {
+			LOG("draw_image");
+			
+			maui_background_paint mbg = maui_background_paint(layer);
+			mbg.baseurl = base_url.c_str();
+			mbg.image = url.c_str();
+			mbg.position_x = layer.origin_box.x;
+			mbg.position_y = layer.origin_box.y;
+			mbg.image_size = { layer.origin_box.width, layer.origin_box.height };
+			_callbacks.draw_background(mbg);			
+		}
+
+		void maui_container::draw_solid_fill(litehtml::uint_ptr hdc, const litehtml::background_layer& layer, const litehtml::web_color& color) {
+			LOG("draw_solid_fill");
+			maui_background_paint mbg = maui_background_paint(layer);
+			mbg.color = color;
+			_callbacks.draw_background(mbg);
 		}
 		void maui_container::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders& borders, const litehtml::position& draw_pos, bool root)
 		{
@@ -129,6 +139,9 @@ namespace litehtml
 		{
 			LOG("on_anchor_click");
 			_callbacks.on_anchor_click(url);
+		}
+		void maui_container::on_mouse_event(const litehtml::element::ptr& el, litehtml::mouse_event event)
+		{
 		}
 		void maui_container::set_cursor(const char* cursor)
 		{

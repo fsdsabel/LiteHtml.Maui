@@ -81,19 +81,18 @@ extern "C" {
 		int						position_y;
 		bool					is_root;
 
-		maui_background_paint(const litehtml::background_paint& val) {
-			image = val.image.c_str();
-			baseurl = val.baseurl.c_str();
+		maui_background_paint(const litehtml::background_layer& val) {			
+			image = nullptr;
+			baseurl = nullptr;
+			image_size = maui_size();
+			position_x = 0;
+			position_y = 0;
 			attachment = val.attachment;
 			repeat = val.repeat;
-			color = val.color;
 			clip_box = val.clip_box;
 			origin_box = val.origin_box;
 			border_box = val.border_box;
 			border_radius = val.border_radius;
-			image_size = { val.image_size.width, val.image_size.height };
-			position_x = val.position_x;
-			position_y = val.position_y;
 			is_root = val.is_root;
 		}
 	};

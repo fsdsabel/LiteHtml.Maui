@@ -87,7 +87,7 @@ namespace LiteHtmlMaui.Handlers.Native
                         {
                             var pos = listMarker.pos;
                             var col = listMarker.color;
-                            DrawTextCb(IntPtr.Zero, new string(text.Reverse().ToArray()), ref font, col, ref pos);                           
+                            DrawTextCb(IntPtr.Zero, new string(text.Reverse().ToArray()), ref font, ref col, ref pos);                           
                         }
                         break;
                 }
@@ -195,7 +195,7 @@ namespace LiteHtmlMaui.Handlers.Native
             fm.DrawSpaces = (font.Italic == FontStyle.fontStyleItalic || font.Decoration != 0) ? 1 : 0;
         }
 
-        protected override void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, WebColor color, ref Position position)
+        protected override void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, ref WebColor color, ref Position position)
         {
             if (_canvas == null) return;
             using var paint = PaintFromFontDesc(font);
