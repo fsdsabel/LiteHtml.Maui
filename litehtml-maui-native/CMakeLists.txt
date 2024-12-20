@@ -35,7 +35,7 @@ endif()
 add_library (litehtml-maui ${LIB_TYPE} "src/litehtml-maui.cpp" "src/litehtml-maui.h" "src/litehtml-maui-container.h" "src/litehtml-maui-container.cpp")
 
 set_target_properties(litehtml-maui PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 17
     C_STANDARD 99
     PUBLIC_HEADER "src/litehtml-maui.h" 
 )

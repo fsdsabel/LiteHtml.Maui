@@ -41,15 +41,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
-    <ManifestResourceWithNoCulture Include="Platforms\iOS\NativeLibs\libgumbo.a">
-      <Link>libgumbo.a</Link>
-    </ManifestResourceWithNoCulture>
-    <ManifestResourceWithNoCulture Include="Platforms\iOS\NativeLibs\liblitehtml.a">
-      <Link>liblitehtml.a</Link>
-    </ManifestResourceWithNoCulture>
-    <ManifestResourceWithNoCulture Include="Platforms\iOS\NativeLibs\liblitehtml-maui.a">
-      <Link>liblitehtml-maui.a</Link>
-    </ManifestResourceWithNoCulture>
+    <NativeReference Include="$(SolutionArtifactsDir)Platforms\iOS\NativeLibs\LiteHtmlMaui.xcframework">
+      <Kind>Static</Kind>
+      <ForceLoad>True</ForceLoad>
+      <IsCxx>True</IsCxx>
+    </NativeReference >
   </ItemGroup>
 
   <PropertyGroup>
@@ -61,7 +57,7 @@
     <_MauiTargetPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_MauiTargetPlatformIsmacOS>    
     <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">True</GeneratePackageOnBuild>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Nullable>enable</Nullable>
     <PackageId>LiteHtml.Maui</PackageId>
     <Authors>fsdsabel</Authors>
