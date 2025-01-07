@@ -111,7 +111,7 @@ extern "C" {
 
 	typedef int (*text_width)(const char* text, font_desc* hFont);
 	typedef litehtml::position(*get_client_rect)();
-	typedef void(*draw_text)(litehtml::uint_ptr hdc, const char* text, font_desc* hFont, litehtml::web_color color, const litehtml::position& pos);
+	typedef void(*draw_text)(litehtml::uint_ptr hdc, const char* text, font_desc* hFont, const litehtml::web_color& color, const litehtml::position& pos);
 	typedef void(*fill_font_metrics)(font_desc* hFont, litehtml::font_metrics* fm);
 	typedef void(*draw_background)(const maui_background_paint& bg);
 	typedef void(*set_cursor)(const char* cursor);

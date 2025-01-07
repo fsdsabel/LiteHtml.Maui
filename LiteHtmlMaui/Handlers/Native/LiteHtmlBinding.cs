@@ -16,10 +16,12 @@ namespace LiteHtmlMaui.Handlers.Native
     [StructLayout(LayoutKind.Sequential)]
     struct FontMetrics
     {
+        public int FontSize;
         public int Height;
         public int Ascent;
         public int Descent;
         public int XHeight;
+        public int CharWidth;
         public int DrawSpaces;
 
     }
