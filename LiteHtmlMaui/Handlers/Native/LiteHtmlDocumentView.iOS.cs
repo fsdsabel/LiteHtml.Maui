@@ -183,8 +183,7 @@ namespace LiteHtmlMaui.Handlers.Native
 
         protected override void DrawTextCb(IntPtr hdc, string text, ref FontDesc font, ref WebColor color, ref Position position)
         {
-            if (!VerifyContext()) return;
-
+            if (!VerifyContext()) return;  
             var attributes = FontAttributesFromFontDesc(ref font);
             attributes.ForegroundColor = new UIColor(Color(color));
 
@@ -197,10 +196,11 @@ namespace LiteHtmlMaui.Handlers.Native
         {
             var uifont = CreateFont(ref font);
 
-            fm.Ascent = (int)uifont.Ascender;
+            fm.Ascent = (int)Math.Ceiling(uifont.Ascender - uifont.Descender);
             fm.Descent = -(int)uifont.Descender;
             fm.Height = (int)Math.Ceiling(uifont.LineHeight);
-            fm.XHeight = (int)Math.Ceiling(uifont.xHeight);
+            fm.XHeight = (int)Math.Ceiling(uifont.XHeight);
+            fm.CharWidth = TextWidthCb("0", ref font);
             fm.DrawSpaces = (font.Italic == FontStyle.fontStyleItalic || font.Decoration != 0) ? 1 : 0;
         }
 

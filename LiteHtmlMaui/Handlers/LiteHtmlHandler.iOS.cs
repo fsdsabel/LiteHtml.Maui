@@ -164,7 +164,10 @@ namespace LiteHtmlMaui.Handlers
         {
             using (CGContext g = UIGraphics.GetCurrentContext())
             {
-                _documentView.DrawDocument(g, (int)_documentView.ViewportSize.Width, (int)_documentView.ViewportSize.Height);
+                _documentView.DrawDocument(
+                    g, 
+                    (int)_documentView.ViewportSize.Width, 
+                    (int)Math.Max(_documentView.ViewportSize.Height, rect.Height));
             }
         }
     }
