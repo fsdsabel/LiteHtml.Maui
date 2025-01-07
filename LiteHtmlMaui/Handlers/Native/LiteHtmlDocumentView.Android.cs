@@ -181,17 +181,19 @@ namespace LiteHtmlMaui.Handlers.Native
         protected override void FillFontMetricsCb(ref FontDesc font, ref FontMetrics fm)
         {
             using var paint = PaintFromFontDesc(font);
-            using var metrics = paint.GetFontMetricsInt();
+            using var metrics = paint.GetFontMetrics();            
             if (metrics == null)
             {
                 return;
             }
-            fm.Ascent = -metrics.Ascent;
-            fm.Descent = metrics.Descent;
-            fm.Height = (int)Math.Ceiling(paint.FontSpacing);// metrics.Descent - metrics.Ascent;
+            fm.Ascent = (int)Math.Ceiling(-metrics.Ascent);
+            fm.Descent = (int)Math.Ceiling(metrics.Descent);
+            fm.Height = fm.Ascent + fm.Descent;
             var bounds = new Rect();
             paint.GetTextBounds("x", 0, 1, bounds);
             fm.XHeight = bounds.Height();
+            paint.GetTextBounds("0", 0, 1, bounds);
+            fm.CharWidth = bounds.Width();
             fm.DrawSpaces = (font.Italic == FontStyle.fontStyleItalic || font.Decoration != 0) ? 1 : 0;
         }
 

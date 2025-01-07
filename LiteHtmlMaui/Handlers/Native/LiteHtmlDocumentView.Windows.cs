@@ -295,6 +295,7 @@ namespace LiteHtmlMaui.Handlers.Native
             fm.Descent = (int)Math.Ceiling(winfont.Descent* scaledSize);
             fm.Height = fm.Ascent + fm.Descent;            
             fm.XHeight = (int)Math.Ceiling(winfont.XHeight * scaledSize);
+            fm.CharWidth = TextWidthCb("0", ref font);
             fm.DrawSpaces = (font.Italic == FontStyle.fontStyleItalic || font.Decoration != 0) ? 1 : 0;            
         }
 
