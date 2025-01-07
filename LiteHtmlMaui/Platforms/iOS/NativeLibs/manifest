@@ -1,0 +1,13 @@
+﻿<BindingAssembly>
+	<NativeReference Name="LiteHtmlMaui.xcframework">
+		<ForceLoad>True</ForceLoad>
+		<Frameworks></Frameworks>
+		<IsCxx>True</IsCxx>
+		<Kind>Static</Kind>
+		<LinkerFlags></LinkerFlags>
+		<LinkWithSwiftSystemLibraries></LinkWithSwiftSystemLibraries>
+		<NeedsGccExceptionHandling></NeedsGccExceptionHandling>
+		<SmartLink></SmartLink>
+		<WeakFrameworks></WeakFrameworks>
+	</NativeReference>
+</BindingAssembly>

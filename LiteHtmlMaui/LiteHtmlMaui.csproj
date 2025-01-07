@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net8.0;net8.0-android34;net8.0-ios17;net8.0-maccatalyst;</TargetFrameworks>
+		<TargetFrameworks>net8.0;net8.0-android34;net8.0-ios17</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>		
 		<UseMaui>true</UseMaui>
         <UseMauiEssentials>true</UseMauiEssentials>
@@ -40,12 +40,17 @@
     <Content CopyToOutputDirectory="PreserveNewest" Include="runtimes/win-x64/native/litehtml-maui.dll" Pack="true" PackagePath="runtimes/win-x64/native/litehtml-maui.dll" />
   </ItemGroup>
 
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+  <ItemGroup>
     <NativeReference Include="$(MSBuildThisFileDirectory)Platforms\iOS\NativeLibs\LiteHtmlMaui.xcframework">
       <Kind>Static</Kind>
       <ForceLoad>True</ForceLoad>
       <IsCxx>True</IsCxx>
-    </NativeReference >
+    </NativeReference>
+    <!-- Workaround to pack the needed iOS libraries on a Windows build -->
+    <None Include="$(MSBuildThisFileDirectory)Platforms\iOS\NativeLibs\LiteHtmlMaui.xcframework\**\*"
+        Pack="true"
+        PackagePath="lib\net8.0-ios17.0\LiteHtmlMaui.resources\LiteHtmlMaui.xcframework\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)Platforms\iOS\NativeLibs\manifest" Pack="true" PackagePath="lib\net8.0-ios17.0\LiteHtmlMaui.resources" />    
   </ItemGroup>
 
   <PropertyGroup>
@@ -121,4 +126,8 @@
     </None>
   </ItemGroup>
 
+
+  <Target Name="ShowTargetFramework" BeforeTargets="CoreCompile">
+    <Message Text="TargetFramework is: $(TargetFramework)" Importance="High" />
+  </Target>
 </Project>
